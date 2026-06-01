@@ -189,5 +189,59 @@ def clean_data(text):
     text = xu_ly_tu_viet_tat(text)
     return text
 
+def fix_repeated_chars(text, max_repeat=2):
+    """Sửa ký tự lặp quá nhiều (ví dụ: tảzzzzz -> tảz)"""
+    result = []
+    prev_char = ''
+    repeat_count = 0
+    
+    for char in text:
+        if char == prev_char:
+            repeat_count += 1
+            if repeat_count <= max_repeat:
+                result.append(char)
+        else:
+            result.append(char)
+            prev_char = char
+            repeat_count = 0
+    
+    return ''.join(result)
+
+def is_valid_vietnamese_text(text):
+    """Kiểm tra text có ít nhất 3 ký tự chữ cái"""
+    alpha_count = sum(1 for c in text if c.isalpha())
+    return alpha_count >= 3
+
+def clean_comment(text):
+    """
+    Sửa lỗi comment:
+    - Xóa ký tự lặp quá nhiều (tảzzzzz -> tảz)
+    - Chỉ loại bỏ comment toàn bộ không có nghĩa (chỉ số, quá ngắn)
+    """
+    if not text or text.strip() == '':
+        return None
+    
+    text = text.strip()
+    
+    # Sửa ký tự lặp
+    text = fix_repeated_chars(text, max_repeat=2)
+    
+    # Loại bỏ chỉ những comment vô nghĩa hoàn toàn
+    if not is_valid_vietnamese_text(text):
+        return None
+    
+    # Comment toàn số
+    if text.replace('.', '').replace(',', '').replace(' ', '').isdigit():
+        return None
+    
+    return text
+
 def preprocess_comment(comment):
+    """Tiền xử lý comment: sửa lỗi -> chuẩn hóa"""
+    # Sửa comment lỗi trước
+    comment = clean_comment(comment)
+    if comment is None:
+        return None
+    
+    # Sau đó mới chuẩn hóa
     return clean_data(comment)
