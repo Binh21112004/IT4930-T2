@@ -1,0 +1,65 @@
+# ==================== PYTHON ====================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+.venv/
+env/
+.env
+
+# ==================== IDE ====================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ==================== OS ====================
+.DS_Store
+Thumbs.db
+*.lnk
+
+# ==================== PROJECT - CÁCH MỌI FILE KHÁC ====================
+# CHỈ ALLOW các file này:
+# - preprocess_comments.py
+# - preprocessing_multilabel.py
+# - preprocessing.py
+# - data/Commentsauxuly/*.csv
+# - app.py (cho web)
+# - consumer-complaint-classification.ipynb
+
+# CÁCH các file khác:
+label_with_openai.py
+label_with_gemini.py
+test_*.py
+reduce_columns.py
+*.ipynb_checkpoints/
+.ipynb_checkpoints/
+
+# Backup files
+*_backup.csv
+*.bak
+
+# Temp files
+*~
+*.tmp
+*.swp
+
+# ==================== DATA - CÁCH folder crawl ====================
+data/4-toys-tiki/
+data/5-thietbi-tiki/
+data/6-diengiadung-tiki/
+data/Book-DienThoai-Laptop/
+data/bachhoa-thoitrangnam-thethao/
+data/nhacua-thoitrangnu-Lamdep/
+data/nhacua-tiki/
+
+# ==================== MODELS - GIỮ LẠI ====================
+# models/*.h5 được tracked (để train model)
+
+# ==================== DOCUMENTS ====================
+~$*.docx
+~$*.xlsx
+*.tmp.docx
