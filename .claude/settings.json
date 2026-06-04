@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git show *)"
+    ],
+    "additionalDirectories": [
+      "d:\\New folder\\data"
+    ]
+  }
+}
