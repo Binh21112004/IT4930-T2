@@ -1,0 +1,168 @@
+========================================================
+BAO CAO PHAN TICH KET QUA TRAINING - VERSION 6
+IT4930 - Data Science | Nhom 21
+Ngay chay: 2026-06-08 | Platform: Kaggle (GPU Tesla P100-PCIE-16GB)
+File log: download6.txt (FULL LOG - khong bi truncate)
+========================================================
+
+
+1. CAC THAY DOI TRONG V6 (so voi V5)
+============================================================
+
+  Thanh phan              | V5 (cu)           | V6 (moi)
+  ------------------------+-------------------+------------------
+  EMBEDDING_DIM           | 32                | 48
+  recurrent_dropout       | 0.2 (LSTM & GRU)  | DA XOA
+  L2 regularization       | l2(0.001)         | l2(0.0005)
+  Dropout sau LSTM/GRU    | Dropout(0.4)      | Dropout(0.3)
+  ReduceLROnPlateau pat   | 4                 | 6
+
+
+2. KET QUA TONG HOP
+============================================================
+
+  Model | V4      | V5       | V6       | V6 vs V4
+  ------+---------+----------+----------+-----------
+  RF    | 91.27%  | 91.27%   | 91.27%   |  0.00%
+  SVM   | 91.36%  | 91.36%   | 91.36%   |  0.00%
+  LR    | 89.95%  | 89.95%   | 89.95%   |  0.00%
+  LSTM  | 90.54%  | 41.72%!! | 41.72%!! | -48.82%!!
+  GRU   | 90.31%  | 89.92%   | 90.25%   | -0.06%
+  CNN   | 90.43%  | 90.09%   | 90.35%   | -0.08%
+
+So sanh gap Overfitting (train acc - val acc, tai best epoch):
+
+  Model | V4 gap | V5 gap | V6 gap | Nhan xet
+  ------+--------+--------+--------+------------------------
+  GRU   | 7.2%   | 6.8%   | 6.98%  | On dinh, tot
+  CNN   | 8.1%   | 6.6%   | 6.96%  | On dinh, tot
+  LSTM  | 7.7%   | N/A    | 0.0%   | Khong overfit vi khong hoc gi
+
+
+3. TIN TOT: VAN DE TOC DO (recurrent_dropout) DA DUOC GIAI QUYET HOAN TOAN
+============================================================
+
+  Giai doan      | V5 (co recurrent_dropout) | V6 (da xoa)     | Speedup
+  ---------------+---------------------------+-----------------+---------
+  ML (RF/SVM/LR) | ~600s (~10 phut)          | ~789s (~13 phut)| (khong doi)
+  LSTM           | khong xac dinh (cham)     | ~53s / 9 epoch  | (~5.9s/epoch)
+  GRU            | ~283s/epoch (35 epoch)    | ~10.8s/epoch    | 26 LAN nhanh hon
+  CNN            | ~2s/epoch                 | ~2.5s/epoch     | (khong doi)
+  TONG THOI GIAN | > 3 GIO (~10800s+)        | ~1224s (~20 PHUT)| ~9 LAN nhanh hon
+
+  cuDNN da duoc kich hoat lai thanh cong cho ca LSTM va GRU.
+  Day la thanh tuu lon nhat cua V6 - notebook chay duoi 25 phut,
+  hoan toan kha thi cho viec lap lai thi nghiem nhieu lan.
+
+
+4. TIN XAU: LSTM VAN THAT BAI HOAN TOAN (KHONG PHAI DO recurrent_dropout)
+============================================================
+
+Training curve LSTM (9 epochs, EarlyStopping patience=8):
+
+  Epoch | Train Acc | Train Loss | Val Acc | Val Loss | LR
+  ------+-----------+------------+---------+----------+--------
+   1    |  0.4267   |  1.3288    | 0.4172  | 1.3271   | 1e-3
+   2    |  0.4270   |  1.3174    | 0.4172  | 1.3223   | 1e-3
+   3    |  0.4270   |  1.3157    | 0.4172  | 1.3218   | 1e-3
+   4    |  0.4270   |  1.3146    | 0.4172  | 1.3217   | 1e-3
+   5    |  0.4270   |  1.3146    | 0.4172  | 1.3208   | 1e-3
+   6    |  0.4270   |  1.3141    | 0.4172  | 1.3210   | 1e-3
+   7    |  0.4270   |  1.3138    | 0.4172  | 1.3208   | 1e-3
+   8    |  0.4270   |  1.3136    | 0.4172  | 1.3209   | 1e-3
+   9    |  0.4270   |  1.3134    | 0.4172  | 1.3201   | 1e-3
+  ---
+  EarlyStopping: dung tai epoch 9, restore epoch 1
+  LSTM Test Accuracy: 0.4172 (41.72%)
+
+Quan sat:
+  - val_acc = 0.4172 = TY LE CLASS "QUALITY" trong tap validation
+    (1634/3917 = 41.72%) -> model chi predict mot class duy nhat
+  - train_acc dung yen tai 0.4270 tu epoch 2 den epoch 9 (chenh lech
+    0.0000 giua cac epoch) -> day KHONG phai underfitting thong thuong,
+    day la mo hinh bi "chet" (dead network / collapsed output)
+  - loss giam rat cham va deu (1.3288 -> 1.3134) nhung khong chuyen
+    thanh cai thien accuracy -> gradient gan nhu = 0, model khong
+    hoc duoc dac trung phan biet giua cac class
+
+KET LUAN QUAN TRONG: V5 va V6 cho CHINH XAC CUNG MOT KET QUA (41.72%),
+du V6 da xoa recurrent_dropout. Dieu nay CHUNG MINH recurrent_dropout
+KHONG PHAI nguyen nhan khien LSTM that bai. Day la mot van de kien truc
+khac, ton tai tu V5 va van con trong V6.
+
+Nguyen nhan co kha nang cao nhat - "Conv1D + L2 + LSTM" combo:
+  Kien truc LSTM hien tai:
+    Embedding(48) -> SpatialDropout1D(0.3)
+    -> Conv1D(64, 5, relu, l2=0.0005) -> MaxPooling1D(4)
+    -> LSTM(64) -> Dropout(0.3) -> Dense(4, softmax, l2=0.0005)
+
+  So sanh voi GRU (HOAT DONG TOT, 90.25%):
+    Embedding(48) -> SpatialDropout1D(0.3)
+    -> Bidirectional(GRU(64)) -> Dropout(0.3)
+    -> Dense(32, relu, l2=0.0005) -> Dropout(0.3) -> Dense(4, softmax)
+
+  Khac biet duy nhat: LSTM co them Conv1D(l2=0.0005) + MaxPooling1D(4)
+  truoc lop hoi quy, GRU thi khong.
+
+  Gia thuyet: SpatialDropout1D(0.3) ngay sau Embedding lam mat 30%
+  kenh dac trung tren TOAN BO sequence, ket hop voi L2 tren Conv1D
+  khien Conv1D+ReLU bi "chet" (dead ReLU - tat ca output <= 0).
+  MaxPooling1D(4) tren chuoi toan so 0 tra ve toan so 0.
+  LSTM nhan input = 0 tai moi timestep -> hoi tu nhanh ve mot fixed
+  point co dinh, khong phu thuoc input -> Dense luon predict 1 class.
+
+  Bang chung gian tiep: GRU (khong co Conv1D) HOAT DONG BINH THUONG
+  voi cung SpatialDropout1D(0.3) va L2(0.0005) tren Dense.
+  CNN (co Conv1D + L2 nhung dung GlobalMaxPooling, khong co LSTM)
+  cung HOAT DONG BINH THUONG (90.35%).
+  => Van de chi xay ra khi Conv1D+L2 dua input vao LSTM.
+
+
+5. DE XUAT CHO V7
+============================================================
+
+  STT | Thay doi                                  | Uu tien | Ly do
+  ----+--------------------------------------------+---------+--------------------------
+   1  | XOA Conv1D + MaxPooling1D khoi LSTM model  | CAO     | Loai bo nguyen nhan
+      | -> Embedding -> SpatialDropout1D -> LSTM(64)|         | nghi van. Kien truc giong
+      | -> Dropout(0.3) -> Dense(4, softmax)        |         | GRU (da chung minh hoat dong)
+   2  | (Thay the) Neu muon giu Conv1D: bo l2 tren  | TRUNG   | L2 + SpatialDropout +
+      | Conv1D rieng cho nhanh LSTM                 |         | Conv1D co the gay dead ReLU
+   3  | (Thay the) Them BatchNormalization sau      | THAP    | On dinh phan phoi dau vao
+      | Conv1D, truoc MaxPooling1D                  |         | cho LSTM, tranh dead units
+   4  | Giu nguyen GRU va CNN (V6)                  | -       | Da hoat dong tot:
+      |                                              |         | GRU 90.25%, CNN 90.35%
+   5  | Giu nguyen ML pipeline (RF/SVM/LR)          | -       | On dinh 91.27/91.36/89.95%
+
+
+6. KET LUAN TONG V6
+============================================================
+
+Thanh tuu lon:
+  (1) GIAI QUYET HOAN TOAN van de toc do: tong thoi gian chay tu
+      >3 GIO xuong con ~20 PHUT (nhanh hon ~9 lan). cuDNN hoat dong
+      tro lai cho ca LSTM va GRU.
+  (2) GRU va CNN dat ket qua gan bang V4, voi overfitting gap on dinh
+      o muc ~7% (tot hon dang ke so v4's 7.2-8.1%).
+  (3) ML models (RF/SVM/LR) on dinh tuyet doi qua 3 phien ban.
+
+Van de nghiem trong con lai:
+  (1) LSTM HOAN TOAN KHONG SU DUNG DUOC: 41.72% (degenerate model,
+      chi predict 1 class). Day la van de tu V5, KHONG lien quan den
+      recurrent_dropout. Nguyen nhan nghi ngo: Conv1D(L2)+SpatialDropout
+      truoc LSTM gay dead ReLU -> LSTM nhan input = 0 -> output co dinh.
+  (2) Can sua kien truc LSTM cho V7: don gian hoa giong GRU (bo Conv1D),
+      hoac bo L2 tren Conv1D rieng cho nhanh LSTM.
+
+Model khuyen nghi su dung (V6):
+  - RF:  91.27% (on dinh nhat, nhanh nhat)
+  - SVM: 91.36% (cao nhat)
+  - CNN: 90.35% (DL tot nhat, gap thap)
+  - GRU: 90.25% (DL on dinh)
+  - LSTM: KHONG DUNG DUOC - cho den khi sua kien truc o V7
+
+========================================================
+Bao cao duoc tao tu log Kaggle run ngay 2026-06-08 (download6.txt - FULL LOG).
+Notebook: https://www.kaggle.com/code/longphan5978/vietnamese-review-classification (Version 6)
+Tong thoi gian chay: ~1224 giay (~20.4 phut) - khong bi truncate log.
+========================================================
