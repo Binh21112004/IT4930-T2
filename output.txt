@@ -1,0 +1,572 @@
+ TRƯỜNG ĐẠI HỌC BÁCH KHOA HÀ NỘI
+TRƯỜNG CÔNG NGHỆ THÔNG TIN VÀ TRUYỀN THÔNG
+----- □ & □ -----
+KHOA HỌC DỮ LIỆU
+Đề tài: PHÂN LOẠI PHẢN ÁNH CỦA NGƯỜI DÙNG 
+TRÊN CÁC SÀN THƯƠNG MẠI ĐIỆN TỬ
+Giảng viên: TS. Nguyễn Đức Anh
+Nhóm sinh viên thực hiện:
+STT
+Họ và tên
+MSSV
+1
+Đỗ Quang Huy
+2
+Nguyễn Thanh Bình
+3
+Lục Minh Đức
+4
+Phan Hoàng Long
+5
+Đặng Anh Đức
+6
+Vương Quốc Huy
+7
+Vũ Quốc Bảo
+8
+Trịnh Quốc Hoàng
+9
+Trịnh Minh Đạt
+      
+Hà Nội, năm 2026
+MỤC LỤC
+MỤC LỤC2
+PHÂN CHIA CÔNG VIỆC3
+CHƯƠNG I. Giới thiệu đề tài4
+1.Giới thiệu4
+2.Mục tiêu4
+CHƯƠNG II. Cách tiếp cận5
+1.Thu thập dữ liệu5
+2.Tiền xử lí dữ liệu7
+3.Chuẩn hóa7
+a)Chuẩn hóa unicode7
+b)Chuẩn hóa dấu câu8
+c)Đưa về chữ viết thường8
+d)Chuẩn hóa câu8
+4.Phân tích dữ liệu sau khi tiền xử lý9
+5.Lựa chọn mô hình học máy:11
+a)Random Forest:11
+b)Support Vector Machine13
+c)Logistic Regression16
+6.Lựa chọn mô hình học sâu19
+a)Long Short Term Memory:19
+b)Gated Recurrent Unit (GRU)21
+c)Convolutional Neural Network (CNN)22
+CHƯƠNG III. Tiến hành dự đoán25
+1.Tiến hành dự đoán trên các mô hình25
+a)Mô hình học máy25
+b)Mô hình học sâu26
+2.Đánh giá27
+a)Mô hình học máy27
+b)Mô hình học sâu27
+KẾT LUẬN30
+TÀI LIỆU THAM KHẢO30
+PHÂN CHIA CÔNG VIỆC
+Họ tên
+MSSV
+Công việc
+Đỗ Quang Huy
+Nguyễn Thanh Bình
+Lục Minh Đức
+Phan Hoàng Long
+Đặng Anh Đức
+Vương Quốc Huy
+Vũ Quốc Bảo
+Trịnh Quốc Hoàng
+Trịnh Minh Đạt
+CHƯƠNG I. Giới thiệu đề tài
+Giới thiệu
+Trên các nền tảng thương mại điện tử hiện nay, hệ thống đánh giá (review) đóng vai trò cốt lõi trong việc định hướng hành vi mua sắm của người dùng. Đặc biệt, những bình luận mang tính chất phê bình, phàn nàn chứa đựng dữ liệu vô cùng giá trị để doanh nghiệp nhìn nhận lại sản phẩm và tối ưu hóa trải nghiệm khách hàng.
+Tuy nhiên, với khối lượng dữ liệu văn bản phi cấu trúc khổng lồ phát sinh mỗi ngày, việc đọc và phân loại thủ công từng phản ánh là bất khả thi. Người bán thường gặp khó khăn trong việc xác định nhanh chóng "điểm nghẽn" của từng đơn hàng—rằng khách hàng đang không hài lòng vì bản thân sản phẩm, vì khâu đóng gói, hay do lỗi từ đơn vị vận chuyển.
+Nhằm giải quyết bài toán này, đề tài "Phân loại phản ánh của người dùng trên các sàn thương mại điện tử" được thực hiện. Bằng việc ứng dụng các kỹ thuật Khai phá dữ liệu (Data Mining) và Xử lý ngôn ngữ tự nhiên (NLP), nhóm tiến hành xây dựng một hệ thống có khả năng tự động trích xuất và phân tích các bình luận tiêu cực. Hệ thống này sẽ đóng vai trò như một bộ lọc thông minh, giúp người bán nhanh chóng phân luồng khiếu nại, từ đó đưa ra các giải pháp khắc phục kịp thời và nâng cao năng lực cạnh tranh trên thị trường.
+Mục tiêu
+Mục tiêu tổng quát: Nghiên cứu, thử nghiệm và xây dựng hệ thống học máy có khả năng phân tích ngữ nghĩa và tự động phân loại các phản ánh tiêu cực của khách hàng trên nền tảng thương mại điện tử.
+Mục tiêu cụ thể: Để đạt được mục tiêu tổng quát, đề tài tập trung giải quyết các nhiệm vụ trọng tâm sau:
+Thu thập dữ liệu: Cào (crawl) và xây dựng tập dữ liệu thực tế từ các bình luận mang đánh giá tiêu cực (từ 3 sao trở xuống) đối với các sản phẩm trên nền tảng Tiki.
+Tiền xử lý văn bản tiếng Việt: Áp dụng các kỹ thuật xử lý ngôn ngữ tự nhiên để làm sạch dữ liệu, chuẩn hóa bộ gõ, xóa từ dừng (stopwords) và gán nhãn dữ liệu.
+Xây dựng mô hình phân loại: Thiết kế và huấn luyện các mô hình để tự động phân luồng bình luận thành 4 nhóm vấn đề cụ thể: Chất lượng sản phẩm (Quality), Khâu vận chuyển (Shipping), Quy cách đóng gói (Packing) và Dịch vụ chăm sóc khách hàng (Service).
+Đánh giá và tối ưu: Thử nghiệm đối sánh giữa các thuật toán Học máy truyền thống (Random Forest, SVM, Logistic Regression) và các mạng Học sâu (LSTM, GRU, CNN) để tìm ra kiến trúc mô hình mang lại độ chính xác (Accuracy, F1-Score) tối ưu nhất cho bài toán.
+CHƯƠNG II. Cách tiếp cận
+Thu thập dữ liệu
+Để có thể thu thập được bình luận của từng sản phẩm, trước hết ta cần thu thập được mã định danh (ID) của từng sản phẩm. Sau khi quan sát phần Network trong danh mục trên Tiki, nhóm tìm thấy API của Tiki có phần danh sách data trong response JSON, trong đó chứa ID của sản phẩm.  
+Dưới đây là API của Tiki dùng để lấy danh sách sản phẩm: 
+https://tiki.vn/api/personalish/v1/blocks/listings?limit=40&include=advertisement&aggregations=2&trackity_id=...&category=1846&page=1 
+Trong đó, các tham số chính bao gồm: 
+limit = 40 có ý nghĩa là hiển thị 40 sản phẩm trên 1 trang
+category = 1846: là mã danh mục của sản phẩm (cụ thể nhóm áp dụng cho ngành hàng Laptop - Máy vi tính - Linh kiện). 
+page = 1 là vị trí trang hiện tại
+Dưới đây là đoạn cấu hình các tham số API mẫu để lấy danh sách laptop: 
+params = {'limit': '40',
+          'include': 'advertisement',
+          'aggregations': '2',
+          'trackity_id': '2366b777-a410-4468-5544-1faa13ae66b5',
+          'category': '1846',
+          'page': '1',
+          'urlKey': 'laptop-may-vi-tinh-linh-kien'
+          }
+Tiếp theo, nhóm tiến hành sử dụng vòng lặp (từ trang 1 đến trang 29) để duyệt qua các trang bằng cách cập nhật tham số page trên API. Với mỗi trang, sau khi nhận được response thành công (status code 200), nhóm trích xuất giá trị id và name (tên sản phẩm) trong danh sách data thuộc định dạng JSON. Dữ liệu thu thập được sẽ được lưu vào file product_id_ncds.csv. 
+prod_id = []
+for i in range(1, 30):
+    params['page'] = i
+    response = requests.get('https://tiki.vn/api/personalish/v1/blocks/listings', headers=header, params=params)
+    if response.status_code == 200:
+        for record in response.json().get('data'):
+            prod_id.append({'id': record.get('id'),
+                            'name': record.get('name')})
+    time.sleep(random.randrange(3, 10))
+    if i % 5 == 0:
+        df = pd.DataFrame(prod_id)
+        df.to_csv('product_id_ncds.csv', index=False)
+Sau khi thành công thu thập được ID sản phẩm, nhóm tiếp tục quan sát phần Network trong trang chi tiết của một sản phẩm và tìm thấy API lấy danh sách bình luận (review): 
+https://tiki.vn/api/v2/reviews?limit=20&include=comments&sort=score|desc,id|desc,stars|all&page=1&product_id={id} 
+Trong đó:
+limit = 20: Thiết lập để hiển thị và gọi 20 bình luận trên 1 trang. 
+include = comments: Yêu cầu API trả về chi tiết nội dung các bình luận. 
+product_id: Là giá trị ID của sản phẩm nhóm vừa thu thập ở bước trên. 
+Dưới đây là tham số cấu hình cho API lấy bình luận:
+params = {
+    'product_id': '274032002',
+    'sort': 'score|desc,id|desc,stars|all',
+    'page': '1',
+    'limit': '20',
+    'include': 'comments'
+}
+Để thu thập bình luận, nhóm đọc danh sách ID sản phẩm từ file CSV vừa tạo. Với mỗi ID, nhóm gửi request đến API đánh giá và lặp qua các trang bình luận.
+Khác với phương pháp tải toàn bộ dữ liệu về rồi mới tiến hành xử lý, nhằm tối ưu hóa dung lượng lưu trữ và tập trung vào mục tiêu của đề tài (phân loại các phàn nàn, đánh giá tiêu cực), nhóm đã tiến hành lọc dữ liệu ngay tại bước cào dữ liệu (crawl). Cụ thể, khi phân tích JSON trả về, nhóm thiết lập điều kiện kiểm tra trường rating. Nhóm chỉ trích xuất và giữ lại những bình luận đáp ứng điều kiện có rating nhỏ hơn hoặc bằng 3 (tương đương với đánh giá từ 3 sao trở xuống).
+Với các bình luận thỏa mãn điều kiện tiêu cực này, nhóm lấy ra các trường dữ liệu cần thiết thông qua hàm comment_parser (bao gồm: mã bình luận, tiêu đề, nội dung, mã khách hàng, và số sao). Toàn bộ kết quả cuối cùng được lưu vào file comments_data_ncds.csv để chuẩn bị cho các bước tiền xử lý ngôn ngữ tự nhiên và huấn luyện mô hình ở giai đoạn sau.
+for pid in tqdm(p_ids, total=len(p_ids)):
+    params['product_id'] = pid
+    print('Crawl comment for product {}'.format(pid))
+    for i in range(10):
+        params['page'] = i
+        response = requests.get('https://tiki.vn/api/v2/reviews', headers=header, params=params, cookies=cookies)
+        if response.status_code == 200:
+            print('Crawl comment page {} success!!!'.format(i))
+            for comment in response.json().get('data'):
+                rating = comment.get('rating')
+                # Lọc trực tiếp các bình luận có rating <= 3 ngay khi crawl
+                if rating is not None and int(rating) <= 3:
+                    result.append(comment_parser(comment))
+df_comment = pd.DataFrame(result)
+df_comment.to_csv('data/laptop-tiki/comments_data_ncds.csv', index=False)
+Tiền xử lí dữ liệu
+Quá trình tiền xử lý dữ liệu đóng vai trò quyết định đến độ chính xác của mô hình. Dữ liệu thô thu thập từ Tiki thường chứa nhiều bình luận rác, ký tự lặp, viết tắt hoặc nhiễu. Nhóm đã xây dựng một Pipeline tiền xử lý tự động (thông qua file preprocess_comments.py và preprocessing.py) bao gồm các bước sau:
+a) Làm sạch bình luận rác và loại bỏ trùng lặp (Trash Removal & Deduplication) Trước khi đi vào chuẩn hóa ngôn ngữ, dữ liệu cần được lọc thô để loại bỏ các bình luận vô nghĩa:
+Sửa ký tự lặp: Xử lý hiện tượng người dùng gõ kéo dài ký tự để biểu đạt cảm xúc (ví dụ: "chậmmmmm" -> "chậm"). Nhóm giới hạn số lần lặp ký tự tối đa là 2.
+Loại bỏ bình luận vô nghĩa: Lược bỏ các bình luận quá ngắn (không đủ 3 chữ cái hợp lệ) hoặc các bình luận chỉ chứa toàn chữ số, dấu câu.
+Loại bỏ trùng lặp (Deduplication): Xóa các bình luận có nội dung y hệt nhau để tránh việc mô hình bị học lệch (bias) vào một số mẫu lặp lại nhiều lần.
+def clean_comment(text):
+    """ Sửa lỗi comment và loại bỏ comment vô nghĩa """
+    if not text or text.strip() == '':
+        return None
+    text = text.strip()
+    
+    # Sửa ký tự lặp quá 2 lần (vd: tảzzzzz -> tảz)
+    text = fix_repeated_chars(text, max_repeat=2)
+    
+    # Loại bỏ chỉ những comment vô nghĩa hoàn toàn (ít hơn 3 chữ cái)
+    if not is_valid_vietnamese_text(text):
+        return None
+    
+    # Loại bỏ comment chỉ toàn chứa số
+    if text.replace('.', '').replace(',', '').replace(' ', '').isdigit():
+        return None
+    return text
+b) Lọc Rating và Gán nhãn sơ bộ (Rating Filter & Initial Labeling) Để tập trung vào bài toán phân loại phàn nàn, nhóm cấu hình bộ lọc để đánh giá lại một lần nữa, đảm bảo tập dữ liệu chỉ giữ lại các bình luận có số sao (rating) từ 3 trở xuống. Tiếp theo, nhóm tiến hành tạo 1 bảng 0 = “không có khiếu nại”, 1 = “có khiếu nại”. Bước đầu, dữ liệu được gán nhãn cột Quality như sau:
+Quality
+Review
+0
+“không nét như monh chờ, chỉnh cỡ nào cũng rõ ở 1 mức độ rất thường. coi phim lâu nhức mắt .âm thanh thì tốt” 
+0
+“chất lượng tốt nên mua nhé. giá giá giá rẻ” 
+0
+“không biết mình xui hay sao nhưng mua phải cái lỗi không sài được.tiki đã hổ trợ đổi trã đóng gói cẩn thận mình nghĩ mình xui thôi nên sẻ đặt lại cái khác nếu bị nữa chắc không phải do xui” 
+1
+“máy bị lỗi, đang xem tự động tắt trình chiếu mặc dù đã cài đặt tắt chế độ bảo vệ màn hình” 
+1
+“tốn mấy trăm nhưng không thể bắt được wifi 5ghz .cực kì thất vọng” 
+1
+“không thể kết nối được với router, liên tục báo lỗi kết nối do quá thời gian mặc dù tôi đã làm đủ cách theo hướng dẫn.” 
+c) Lọc dữ liệu Đơn nhãn (Single-label Filtering) Trong thực tế, người dùng có thể gộp nhiều phàn nàn trong cùng một bình luận (ví dụ: vừa chê chất lượng, vừa chê giao hàng). Sau quá trình gán nhãn thủ công cho các cột, nhằm làm cho ranh giới phân loại của mô hình học máy được rõ ràng và tránh tình trạng nhiễu chéo, nhóm quyết định chỉ giữ lại các bình luận thuộc về một nhãn duy nhất (Single-label).
+Bằng việc sử dụng kịch bản filter_single_label.py, nhóm tạo ra một mặt nạ (mask) để quét qua tập dữ liệu. Dữ liệu đầu ra sẽ chỉ chứa các dòng có đúng 1 giá trị là 1 và 3 giá trị còn lại là 0 (Ví dụ: [1,0,0,0] tức là chỉ phàn nàn về Chất lượng). Các bình luận đa nhãn hoặc không mang nhãn nào sẽ bị loại bỏ hoàn toàn.
+def clean_comment(text):
+    """ Sửa lỗi comment và loại bỏ comment vô nghĩa """
+    if not text or text.strip() == '':
+        return None
+    text = text.strip()
+    
+    # Sửa ký tự lặp quá 2 lần (vd: tảzzzzz -> tảz)
+    text = fix_repeated_chars(text, max_repeat=2)
+    
+    # Loại bỏ chỉ những comment vô nghĩa hoàn toàn (ít hơn 3 chữ cái)
+    if not is_valid_vietnamese_text(text):
+        return None
+    
+    # Loại bỏ comment chỉ toàn chứa số
+    if text.replace('.', '').replace(',', '').replace(' ', '').isdigit():
+        return None
+    return text
+Chuẩn hóa
+Chuẩn hóa unicode
+Chuyển đổi các bình luận về chuẩn NFC của unicode. 
+Lí do phải chuẩn hóa unicode là có thể người dùng sử dụng bộ mã khác nhau khi gõ tiếng Việt, dẫn đến mặc dù 2 chữ y hệt nhau nhưng máy sẽ dịch thành 2 từ khác nhau. Ví dụ kí tự Å có thể được biểu diễn thành "\u00c5" hoặc chia thành ký tự A và vòng tròn "A\u030A".
+Ở đây nhóm quyết định chuyển thành chuẩn NFC (Canonical Composition): 
+Composition: Chuyển đổi các ký tự nhiều mã thành ký tự một mã, như ví dụ trên là "A\u030A" => "\u00c5"
+Canonical: Bảo toàn nguyên dạng, ví dụ "2⁵" sau khi chuẩn hóa vẫn sẽ là "2⁵"
+Vậy sau khi dùng chuẩn NFC thì máy sẽ dịch như sau : (Å) "A\u030A" => (Å) "\u00c5"
+Chuẩn hóa dấu câu
+Trong tiếng Việt có 2 kiểu gõ dấu câu như sau: “hóa” và “hoá”. Do đó, có thể có các từ giống nhau nhưng lại có cách viết khác nhau khi chúng ta sử dụng dữ liệu văn bản vào bài toán học máy. Do đó, ta cần đưa chúng về một bộ gõ tiêu chuẩn (ở đây nhóm chọn tiêu chuẩn là “hóa”).
+Để làm được vậy, ta sẽ lặp qua từng ký tự trong từ và xác định vị trí của các nguyên âm và xác định vị trí của các dấu thanh (ấn, sắc, huyền, ngã, nặng) trên các nguyên âm này.
+Dựa trên thông tin về vị trí nguyên âm và dấu thanh, ta sẽ cập nhật lại các ký tự nguyên âm với dấu thanh chính xác. Ví dụ, nếu gặp "a" không dấu, nó sẽ được thay thế bằng "à", "á", "ả", "ã" hoặc "ạ" tùy thuộc vào dấu thanh xác định.
+Nhưng có những trường hợp đặc biệt như “qu” và “gi”. Trong tiếng Việt, chuỗi "qu" thường biểu thị một âm vị riêng biệt, khác với việc đọc riêng "q" và "u". Trường hợp này ta sẽ coi “qu” như 1 kí tự đơn và thực hiện như bước trên.
+Đưa về chữ viết thường
+Các trường hợp viết hoa sẽ được xử lí thành viết thường. Ví dụ: “BÁO CÁO” hoặc “Báo Cáo” sẽ được chuyển thành “báo cáo”
+Chuẩn hóa câu
+Thay thế các khoảng trắng liên tiếp bằng một khoảng trắng duy nhất và loại bỏ khoảng trắng ở đầu và cuối chuỗi
+Xóa các ký tự không hợp lệ trong văn bản tiếng Việt
+Loại bỏ các dấu câu  !"#$%&'()*+,-./:;<=>?@[\]^_\{|}~` bằng cách thay thế chúng bằng khoảng trắng. Ví dụ khi đưa vào "Hello, world!" đầu ra sẽ là "Hello world"
+Xử lý các từ stopwords. Các từ stopwords là các từ mang ít giá trị ý nghĩa và không khác nhau nhiều trong các văn bản khác nhau, ví dụ là từ “các”, “những”, “rất”,… Để xử lí các từ này nhóm em sẽ duyệt qua file có sẵn những từ stopwords trong tiếng Việt và loại bỏ các từ có trong câu nếu tồn tại trong file.
+Xóa các emoji. Nhóm em xử lí bằng cách tạo 1 mảng chứa các unicode của emoji và xóa các kí tự đó nếu tồn tại trong câu.
+Thay thế các từ viết tắt. Ví dụ “k” thành “không”, “sp” thành “sản phẩm”,… Nhóm em xử lí bằng cách tạo 1 mảng chứa các từ viết tắt thay thế các từ đó nếu tồn tại trong câu.
+Dữ liệu sau khi chuẩn hóa sẽ có dạng như thế này:
+content
+Quality
+Service
+Shipping
+Packing
+không nét như monh chờ, chỉnh cỡ nào cũng rõ ở 1 mức độ rất thường. coi phim lâu nhức mắt .âm thanh thì tốt
+1
+0
+0
+0
+máy bị lỗi, đang xem tự động tắt trình chiếu mặc dù đã cài đặt tắt chế độ bảo vệ màn hình
+1
+0
+0
+0
+hình ảnh mờ, tương thích iphone kém, nhiều lỗi khi kết nối iphone so với các thiết bị khác như fpt box hay ibox tv…
+1
+0
+0
+0
+giao chất lượng tốt. test cũng được! nhưng trong hộp lại thiếu cộng dây usb nối dài. không biết sản phẩm này tp-link đóng gói không cho vào hay là bên bán sản phẩm đã lấy ra.
+0
+1
+0
+0
+sản phẩm nguyên seal của nhà cung cấp. xài tốt, nhưng các loại dongle wifi của tp-link hay bị lỗi không nhận wifi 5ghz của router ở một số kênh chanel , mình bị lỗi này và phải chỉnh lại router mới sử dùng được băng tầng kép.
+0
+0
+0
+0
+sản phẩm đẹp, hỗ trợ cả chuẩn ac và mimo nên chất lượng kết nối tốt. có đầy đủ driver cho windows và mac. tuy nhiên nó có những nhược điểm sau: 1. kích cỡ khá lớn nên khi gắn vào laptop hoặc pc có khả năng nó sẽ che mất các cổng kết nối bên cạnh. có lẽ kích cỡ lớn là do hỗ trợ cả 2 chuẩn mạng nên cần nhiều anten hơn. mình nghĩ sản phẩm này thích hợp với pc hơn laptop. mua cho laptop nên mua sản phẩm cấp thấp hơn. 2. trên windows 10, driver mới nhất của sản phẩm cũ hơn driver do microsoft cung cấp nên windows tự động dùng driver của nó thay vì driver của hãng. kết quả là tính năng mimo không hoạt động, đồng thời mỗi lần khởi động thiết bị đều bị disconect và reconnect lại. mình đã thử cài lại driver, chọn driver mặc định trong device manager nhưng vẫn không khắc phục được.
+1
+0
+0
+0
+- vừa nhận sản phẩm sau khi đặt hơn 1h - rất tốt - sản phẩm giao được đóng trong hộp cũ có thể bỏ qua - hộp bên trong không nhưng nilon bao bọc - sản phẩm thiếu nắp và dây nối dài tiki bán sản phẩm cũ cho khách à?
+0
+1
+0
+1
+chất lượng kém chất lượng không dung quảng cáo và không hoàn lại được chán
+1
+0
+0
+0
+yêu cầu đổi trả và đã gửi trả sản phẩm nhưng cửa sản phẩm không trả tiền và cũng chiếm lấy sản phẩm của khách. đề nghị tikki xem xét và trả lại tiền,
+1
+1
+0
+0
+tốn mấy trăm nhưng không thể bắt được wifi 5ghz .cực kì thất vọng
+1
+0
+0
+0
+Phân tích dữ liệu sau khi tiền xử lý
+Sau khi thu thập dữ liệu, nhóm em nhận thấy có quá ít dữ liệu thuộc các label Packing, Service, Shipping. Cụ thể số lượng dữ liệu cho Quality là 9188, nhưng số lượng cho các label khác chỉ trong khoảng chưa tới 1000 dữ liệu. 
+Vậy nên để mở rộng thêm dữ liệu, nhóm em đã sử dụng phương pháp Synonym Replacement để tăng cường tệp dữ liệu. Synonym Replacement là một kỹ thuật trong đó ta thay thế một từ bằng một trong các từ đồng nghĩa của nó. Sau khi thay thế từ, vì bản chất các bình luận đó không đổi nên nó sẽ vẫn giữ label của bình luận gốc ban đầu, nên nhóm em sẽ gán label của bình luận gốc cho các bình luận mới đã được thay thế bằng các từ đồng nghĩa.
+Số lượng dữ liệu thu được sau khi mở rộng dữ liệu :
+Các từ khóa xuất hiện nhiều nhất của mỗi nhãn:
+Packing:
+Quality:
+Service:
+Shipping:
+Lựa chọn mô hình học máy:
+Random Forest:
+Giới thiệu về Random Forest:
+<source: medium.com >
+Random Forest là một phương pháp ensemble learning, tức là kết hợp nhiều mô hình học máy để tạo ra một mô hình mạnh mẽ hơn. Trong trường hợp của Random Forest, mô hình này kết hợp nhiều cây quyết định (decision trees) để đạt được hiệu suất tốt hơn.+ Bagging (Bootstrap Aggregating): là kỹ thuật chủ đạo đứng sau Random Forest, giúp cho giảm biến động (variance) và cải thiện độ chính xác của mô hình. Quá trình bagging gồm các bước sau: Lấy mẫu dữ liệu và Xây dựng cây quyết định+ Random Feature Selection : Một yếu tố quan trọng khác trong Random Forest là lựa chọn ngẫu nhiên các đặc trưng (features) tại mỗi nút của cây quyết định. Điều này giúp giảm sự tương quan giữa các cây và làm cho mô hình tổng thể mạnh mẽ hơn. Quá trình này bao gồm: Chọn đặc trưng ngẫu nhiên và chọn ngưỡng phân chia tốt nhất
++ Aggregation of Predictions: Sau khi các cây quyết định được xây dựng, Ramdom Forest tổng hợp dự đoán từ từng cây để đưa ra dự đoán cuối cùng. Đối với bài toán phân loại: Random Forest sử dụng phương pháp majority voting (lớp dự đoán cuối cùng là lớp được dự đoán nhiều nhất từ các cây)
+Ưu điểm của Random Forest:
+Giảm độ biến động và tránh overfitting: việc sử dụng nhiều cây quyết định và lựa chọn đặc trưng ngẫu nhiên, Random Forest thường ít bị overfitting so với một cây quyết định đơn lẻ.
+Độ chính xác cao: Random Forest thường đạt được độ chính xác cao nhờ vào phương pháp tổng hợp..
+Xử lý dữ liệu mất mát và không cân bằng: Random Forest có khả năng xử lý tốt các dữ liệu thiếu và không cân bằng nhờ vào phương pháp bootstrap.
+Ít nhạy cảm với các outliers: Việc kết hợp nhiều cây quyết định giúp giảm ảnh hưởng của các outliers.
+Random Forest trong bài toán:
+Mô hình Random 
++ n_estimators=100: Số lượng cây quyết định (decision trees) trong rừng.
++ random_state=42: Thiết lập seed cho bộ sinh số ngẫu nhiên để đảm bảo tính tái lập của kết quả
+Huấn luyện mô hình:+ X_train_tfidf: Dữ liệu huấn luyện đã được chuyển đổi thành ma trận TF-IDF.
++ y_train: Nhãn của dữ liệu huấn luyện.
+Đánh giá mô hình
++ Accuracy: Cho biết tỷ lệ phần trăm các dự đoán đúng. 
++ Precision: Cho biết tỷ lệ phần trăm các dự đoán đúng trong số các dự đoán được thực hiện cho mỗi lớp. 
++ Recall: Cho biết tỷ lệ phần trăm các dự đoán đúng trong số các mẫu thực sự thuộc về mỗi lớp. F1 
++ Score: Là trung bình điều hòa của precision và recall, cung cấp một cái nhìn cân bằng giữa hai chỉ số này. 
+Nhãn
+Precision
+Recall
+F1
+Support
+Packing
+0.95
+0.98
+0.97
+1,000
+Quality
+0.93
+0.90
+0.91
+2,185
+Service
+0.87
+0.86
+0.87
+1,036
+Shipping
+0.88
+0.93
+0.90
+1,001
+Kết luận: Không có dấu hiệu overfitting/underfitting đáng kể
+RF v4 giảm nhẹ 0.27% so v3 (91.54% -> 91.27%) do class_weight='balanced' hướng đến việc cải thiện recall của các lớp thiểu số.
+Service vẫn là nhãn yếu nhất (F1=0.87, recall=0.86) - từ vựng về dịch vụ khách hàng overlap với nhãn khác.
+Packing F1=0.97 cao nhất vì đặc trưng từ vựng ("đóng gói", "hộp", "bọc") ít bị nhầm.
+RF với 200 cây có tính ổn định cao, không có overfitting ở ensemble methods.
+Nhận xét: Model hoạt động tốt ở mức ceiling của TF-IDF. Để cải thiện thêm cần phương pháp biểu diễn ngữ nghĩa tốt hơn (pretrained word embeddings).
+Support Vector Machine
+Giới thiệu về SVM
+SVM là một thuật toán giám sát được sử dụng chủ yếu cho việc phân loại. Trong thuật toán này, chúng ta vẽ đồ thị dữ liệu là các điểm trong n chiều ( ở đây n là số lượng các tính năng) với giá trị của mỗi tính năng sẽ là một phần liên kết. Sau đó chúng ta thực hiện tìm hyper-plane phân chia các lớp. Mục tiêu của SVM là tìm ra hyperplane tối ưu nhất để phân tách các lớp.
+Margin trong SVM
+Margin là khoảng cách giữa hyperplane đến 2 điểm dữ liệu gần nhất tương ứng với các phân lớp. Phương pháp SVM luôn cố gắng cực đại hóa margin này, từ đó thu được một siêu phẳng tạo khoảng cách xa nhất so với 2 quả táo và lê. Nhờ vậy, SVM có thể giảm thiểu việc phân lớp sai (misclassification) đối với điểm dữ liệu mới đưa vào
+SVM trong bài toán 
+Tìm nghiệm cho SVM nhóm em sử dụng trực tiếp SVC trong thư viện sklearn.
+Huấn luyện mô hình:
++ kernel='linear': Đây là tham số xác định loại kernel (hạt nhân) sẽ sử dụng. Ở đây, nhóm em sử dụng kernel tuyến tính (linear kernel). Có nghĩa là SVM sẽ cố gắng tìm siêu phẳng phân chia các lớp trong không gian đặc trưng.
++ random_state=42: Giữ cho kết quả huấn luyện có thể tái lặp lại bằng cách cố định hạt giống ngẫu nhiên. Thông số này giúp đảm bảo rằng mỗi lần chạy mô hình với cùng một tập dữ liệu sẽ nhận được cùng một kết quả.
++ svm_classifier.fit(X_train_tfidf, y_train): Huấn luyện mô hình trên dữ liệu huấn luyện đã được chuyển đổi thành ma trận TF-IDF. 
++ X_train_tfidf: Ma trận TF-IDF của dữ liệu huấn luyện. 
++ y_train: Nhãn của dữ liệu huấn luyện.
+Đánh giá mô hình: 
++ Dự đoán trên tập kiểm tra: 
+svm_y_pred = svm_classifier.predict(X_test_tfidf): Dự đoán nhãn của dữ liệu kiểm tra sử dụng mô hình SVM đã huấn luyện. 
+X_test_tfidf: Ma trận TF-IDF của dữ liệu kiểm tra.
++ Tính toán các giá trị chỉ số đánh giá:
+Accuracy: Tính tỷ lệ phần trăm các dự đoán đúng trên tổng số dự đoán. Precision: Tính tỷ lệ phần trăm các dự đoán đúng trong số các dự đoán được thực hiện. Ở đây, chúng ta sử dụng trung bình có trọng số để tính toán precision. 
+Recall: Tính tỷ lệ phần trăm các dự đoán đúng trong số các mẫu thực sự thuộc về mỗi lớp. Chúng ta cũng sử dụng trung bình có trọng số để tính toán recall. 
+F1 Score: Tính trung bình điều hòa giữa precision và recall. Chúng ta sử dụng trung bình có trọng số để tính toán F1 Score
+Kết quả:
+Nhãn
+Precision
+Recall
+F1
+Support
+Packing
+0.94
+0.99
+0.96
+1,000
+Quality
+0.95
+0.88
+0.91
+2,185
+Service
+0.86
+0.88
+0.87
+1,036
+Shipping
+0.87
+0.95
+0.91
+1,001
+Kết luận: Cân bằng tốt, vượt RF lần đầu tiên
+SVM hưởng lợi nhiều nhất từ class_weight='balanced' (+2.58%).
+Service recall tăng mạnh: 0.81 -> 0.88 (+7%) - class_weight buộc model chú ý hơn đến minority classes.
+Shipping recall: 0.86 -> 0.95 (+9%) - cải thiện đáng kể.
+Kernel linear phù hợp với không gian TF-IDF chiều cao (bigram tạo hàng chục nghìn features).
+SVM tìm hyperplane tối ưu -> ít bị overfit hơn RF trên high-dim data.
+Logistic Regression
+Giới thiệu về Logistic Regression:
+Logistic Regression là một trong những mô hình phân loại cơ bản trong machine learning, được sử dụng rộng rãi trong các bài toán phân loại hai lớp. Mặc dù có từ "regression" trong tên gọi, nhưng Logistic Regression thực ra là một mô hình phân loại, không phải là mô hình hồi quy. Mô hình này dự đoán xác suất một mẫu thuộc vào một lớp cụ thể dựa trên các biến đầu vào.
+Cách hoạt động của Logistic Regression sử dụng hàm logistic (hay sigmoid function) để biểu diễn xác suất thuộc vào một lớp cụ thể, được tính dựa trên tổ hợp tuyến tính của các biến đầu vào. Hàm sigmoid được biểu diễn như sau:
+Ưu điểm của Logistic Regression: 
+Đơn giản và dễ hiểu: Logistic Regression có cách hoạt động rõ ràng và dễ hiểu, phù hợp cho những người mới bắt đầu với machine learning. 
+Ít tài nguyên tính toán: Logistic Regression cần ít tài nguyên tính toán so với các mô hình phức tạp hơn như Neural Networks hay Random Forests, nên nó phù hợp cho các tập dữ liệu lớn. 
+Tính linh hoạt trong việc điều chỉnh tham số: Logistic Regression cho phép điều chỉnh các tham số như hệ số điều chỉnh (regularization) để kiểm soát overfitting. 
+Khả năng hiển thị tầm quan trọng của đặc trưng: Bằng cách xem xét hệ số của mỗi biến đầu vào, ta có thể đánh giá được mức độ ảnh hưởng của từng biến đến kết quả phân loại. 
+Cho kết quả xác suất: Logistic Regression không chỉ dự đoán lớp của một mẫu, mà còn cung cấp một ước lượng xác suất cho dự đoán của nó. 
+Logistic Regression trong bài toán:
+Huấn luyện mô hình:
++ lr_classifier.fit(X_train_tfidf, y_train): Huấn luyện mô hình trên dữ liệu huấn luyện đã được chuyển đổi thành ma trận TF-IDF. 
++ X_train_tfidf: Ma trận TF-IDF của dữ liệu huấn luyện. 
++ y_train: Nhãn của dữ liệu huấn luyện.
+Đánh giá mô hình: 
++ Dự đoán trên tập kiểm tra: 
+lr_y_pred = lr_classifier.predict(X_test_tfidf): Dự đoán nhãn của dữ liệu kiểm tra sử dụng mô hình Logistic Regression đã huấn luyện. X_test_tfidf: Ma trận TF-IDF của dữ liệu kiểm tra.
++ Tính toán các giá trị chỉ số đánh giá:
+Accuracy: Tính tỷ lệ phần trăm các dự đoán đúng trên tổng số dự đoán. Precision: Tính tỷ lệ phần trăm các dự đoán đúng trong số các dự đoán được thực hiện. Ở đây, chúng ta sử dụng trung bình có trọng số để tính toán precision. 
+Recall: Tính tỷ lệ phần trăm các dự đoán đúng trong số các mẫu thực sự thuộc về mỗi lớp. Chúng ta cũng sử dụng trung bình có trọng số để tính toán recall. 
+F1 Score: Tính trung bình điều hòa giữa precision và recall. Chúng ta sử dụng trung bình có trọng số để tính toán F1 Score.
+ 
+Kết luận: Logistic Regression là một mô hình phân loại đơn giản nhưng hiệu quả trong machine learning. Mặc dù có cấu trúc đơn giản, nhưng mô hình này vẫn mang lại kết quả tốt trên nhiều loại dữ liệu. Tuy nhiên, cũng có một số hạn chế cần được xem xét: Hạn chế của Logistic Regression: 
+Giả định tuyến tính: Logistic Regression giả định mối quan hệ giữa biến đầu vào và đầu ra là tuyến tính. Điều này có thể là hạn chế khi mối quan hệ thực tế không phải lúc nào cũng tuyến tính. 
+Khả năng mô hình hóa mối quan hệ phức tạp: Logistic Regression không thể mô hình hóa mối quan hệ phức tạp giữa các biến đầu vào và đầu ra như các mô hình phức tạp hơn như Neural Networks hay Random Forests. 
+Hướng giải quyết để cải thiện hiệu quả của mô hình Logistic Regression: 
+Thử nghiệm các cấu trúc mô hình khác nhau: Khám phá và thử nghiệm các biến thể của Logistic Regression như Regularized Logistic Regression (ví dụ: Ridge hoặc Lasso Regression) để kiểm soát overfitting hoặc Polynomial Logistic Regression để mô hình hóa mối quan hệ phi tuyến. 
+Sử dụng các kỹ thuật tiên tiến hơn: Sử dụng các kỹ thuật như Support Vector Machines hoặc Neural Networks để xem xét khả năng mô hình hóa mối quan hệ phức tạp hơn. 
+Điều chỉnh tham số cho các thành phần của mô hình: Tìm kiếm tham số tối ưu cho mô hình Logistic Regression bằng cách sử dụng các kỹ thuật như Grid Search hoặc Random Search để cải thiện hiệu suất của mô hình.
+Lựa chọn mô hình học sâu
+Nhóm lựa chọn 3 mô hình Long Short Term Memory (LSTM), GRU, CNN
+Long Short Term Memory:
+Giới thiệu về LSTM:
+Mạng nơ-ron hồi quy dài hạn (LSTM) là một kiến trúc mạng nơ-ron nhân tạo (ANN) được thiết kế để xử lý các chuỗi dữ liệu phụ thuộc thời gian. LSTM được phát triển bởi Hochreiter và Schmidhuber vào năm 1997 để giải quyết vấn đề mất mát đạo hàm (gradient vanishing) trong các mạng nơ-ron hồi quy (RNN) truyền thống
+Ưu điểm của mạng LSTM so với mạng RNN truyền thống:
+Khả năng học tập các chuỗi dài: LSTM có thể học tập các chuỗi dài hơn nhiều so với RNN truyền thống do khả năng lưu trữ thông tin lâu dài của nó.
+Khả năng xử lý các chuỗi phức tạp: LSTM có thể xử lý các chuỗi phức tạp hơn so với RNN truyền thống do khả năng học tập các mối quan hệ phụ thuộc thời gian phức tạp.
+Khả năng chống nhiễu: LSTM có khả năng chống nhiễu tốt hơn so với RNN truyền thống do khả năng quên đi thông tin không quan trọng.
+hình ...: Mô hình LSTM
+<Source: medium.com  >
+Mạng LSTM sử dụng trong bài toán:
+Lớp nhúng (Embedding Layer): Lớp này chuyển đổi các từ trong văn bản thành các vectơ biểu diễn, giúp mô hình có thể hiểu và xử lý thông tin ngữ nghĩa của văn bản.
+Lớp tích chập 1D (1D Convolutional Layer): Lớp này sử dụng các bộ lọc để trích xuất các đặc trưng cục bộ từ chuỗi dữ liệu đầu vào. Các đặc trưng này là những thông tin quan trọng giúp mô hình học được mối quan hệ giữa các từ trong văn bản.
+Lớp pooling 1D (1D Pooling Layer): Lớp này giảm kích thước của chuỗi dữ liệu đầu vào bằng cách thực hiện phép toán lấy giá trị tối đa (max pooling). Việc giảm kích thước giúp mô hình tiết kiệm tài nguyên tính toán và giảm thiểu hiện tượng quá khớp.
+Lớp kết nối đầy đủ (Fully Connected Layer): Lớp này kết nối tất cả các nơ-ron trong lớp LSTM với tất cả các nơ-ron trong lớp đầu ra.
+Cách thức mô hình được huấn luyện và đánh giá:
+Optimizer (Trình tối ưu hóa): Adam:  Hiệu quả cao, thường được sử dụng cho các bài toán LSTM.
+Loss (Hàm mất mát): Đo lường mức độ sai lệch giữa dự đoán của mô hình và giá trị thực tế.
+Sparse_Categorical_Crossentropy: Sử dụng cho các bài toán phân loại đa lớp
+Metrics (Chỉ số đánh giá): Đo lường hiệu suất của mô hình trên tập dữ liệu đánh giá.
+Accuracy: Tỷ lệ dự đoán chính xác
+Kết luận:
+Nhìn chung, kiến trúc mạng LSTM này có cấu trúc tương đối đơn giản nhưng hiệu quả. Tuy nhiên, mô hình này vẫn có một số hạn chế như việc lựa chọn tham số cho các thành phần của mô hình có thể ảnh hưởng đến hiệu suất của mô hình. Hướng giải quyết tương lai để cải thiện hiệu quả của mô hình: Thử nghiệm các cấu trúc mô hình khác nhau, Sử dụng các kỹ thuật học sâu tiên tiến hơn, Điều chỉnh tham số cho các thành phần của mô hình.
+Gated Recurrent Unit (GRU)
+Giới thiệu về mạng GRU
+Mạng GRU (Gated Recurrent Unit) là một biến thể của mạng LSTM (Long Short-Term Memory) được phát triển để khắc phục một số hạn chế của LSTM, đặc biệt là vấn đề biến mất gradient trong các mạng RNN (Recurrent Neural Network) sâu. GRU có cấu trúc đơn giản hơn LSTM nhưng vẫn có khả năng học được các phụ thuộc thời gian dài trong dữ liệu.
+Cách thức hoạt động của GRU:
+Cổng cập nhật (Update Gate): Xác định mức độ thông tin từ trạng thái ẩn trước đó được giữ lại trong trạng thái ẩn hiện tại.
+Cổng tái thiết lập (Reset Gate): Xác định mức độ thông tin từ trạng thái ẩn trước đó được xóa bỏ trước khi cập nhật.
+Tạo trạng thái ứng cử viên (Candidate State): Tạo một trạng thái ẩn mới dựa trên trạng thái ẩn trước đó và đầu vào hiện tại.
+Cập nhật trạng thái ẩn: Trạng thái ẩn hiện tại được tính toán bằng cách kết hợp trạng thái ẩn trước đó và trạng thái ứng cử viên theo tỷ lệ được xác định bởi cổng cập nhật.
+Mạng GRU sử dụng trong bài toán:
+Lớp nhúng (Embedding Layer): Lớp này chuyển đổi các từ trong văn bản thành các vectơ biểu diễn, giúp mô hình có thể hiểu và xử lý thông tin ngữ nghĩa của văn bản.
+Lớp GRU (Gated Recurrent Unit Layer): Lớp này là lớp chính của mô hình GRU, giúp mô hình học được các phụ thuộc thời gian dài trong văn bản.
+Lớp kết nối đầy đủ (Fully Connected Layer): Lớp này kết nối tất cả các nơ-ron trong lớp GRU với tất cả các nơ-ron trong lớp đầu ra.
+Kết luận: 
+Kiến trúc mạng GRU có cấu trúc tương đối đơn giản nhưng hiệu quả. Việc sử dụng vectơ nhúng được đào tạo trước giúp cải thiện hiệu quả của mô hình và giảm thời gian huấn luyện. Việc sử dụng lớp GRU giúp mô hình học được các phụ thuộc thời gian dài trong văn bản. Việc sử dụng lớp kết nối đầy đủ giúp mô hình tạo ra dự đoán cuối cùng cho bài toán.
+Convolutional Neural Network (CNN)
+Giới thiệu về mạng CNN:
+Mạng nơ-ron tích chập (Convolutional Neural Network - CNN) là một loại mạng nơ-ron nhân tạo (artificial neural network) được sử dụng phổ biến trong lĩnh vực xử lý hình ảnh và thị giác máy tính. Tuy nhiên, trong những năm gần đây, CNN cũng được ứng dụng hiệu quả trong các bài toán xử lý ngôn ngữ tự nhiên (natural language processing – NLP)
+Mạng CNN sử dụng trong bài toán:
+Lớp nhúng (Embedding Layer): Lớp này chuyển đổi các từ trong văn bản thành các vectơ biểu diễn, giúp mô hình có thể hiểu và xử lý thông tin ngữ nghĩa của văn bản.
+Lớp tích chập 1D (1D Convolutional Layer): Lớp này sử dụng các bộ lọc để trích xuất các đặc trưng cục bộ từ chuỗi vectơ biểu diễn văn bản. Mỗi bộ lọc có kích thước kernel (kích thước cửa sổ) và số lượng kênh bằng với số kênh của ma trận đầu vào.
+Lớp pooling 1D (1D Pooling Layer): Lớp này giảm kích thước của chuỗi vectơ đầu ra bằng cách thực hiện phép toán lấy giá trị tối đa (max pooling) hoặc giá trị trung bình (average pooling) trong một cửa sổ nhất định. Việc giảm kích thước giúp mô hình tiết kiệm tài nguyên tính toán và giảm thiểu hiện tượng quá khớp.
+Lớp kết nối đầy đủ (Fully Connected Layer): Lớp này kết nối tất cả các nơ-ron trong lớp pooling cuối cùng với tất cả các nơ-ron trong lớp đầu ra.
+CHƯƠNG III. Tiến hành dự đoán
+Tiến hành dự đoán trên các mô hình
+Mô hình học máy
+Sử dụng công cụ Vectorizer để chuyển đổi bình luận mới thành ma trận TF-IDF. Ma trận TF-IDF sẽ đại diện cho từ ngữ trong bình luận dưới dạng các giá trị số, phản ánh tần suất từ đó xuất hiện trong tập dữ liệu nhưng giảm trọng số của những từ quá thông dụng. Sau đó ta đưa bình luận vào mô hình để mô hình dự đoán nhãn của bình luận. Kết quả được hiển thị dưới đây
+Mô hình học sâu
+Sau khi chuẩn hóa bình luận như phần trên đã đề cập bằng hàm cleaned_comment, tokenizer.texts_to_sequences() sẽ chuyển đổi bình luận đã làm sạch thành dãy số dựa trên tokenizer đã được huấn luyện từ trước. pad_sequences() thực hiện padding cho dãy số để tất cả các dãy có cùng độ dài MAXLEN. Điều này cần thiết để đảm bảo mỗi đầu vào có cùng kích thước khi đưa vào mô hình. Ta đưa bình luận đã được xử lý vào mô hình và mô hình sẽ dự đoán nhãn của bình luận. Kết quả sẽ được hiển thị dưới đây:
+Đánh giá
+Mô hình học máy
+Model
+Accuracy
+Precision
+Recall
+F1 Score
+Random Forest
+0.9127
+-
+-
+0.9126
+SVM
+0.9136
+-
+-
+0.9135
+Logistic Regression
+0.8995
+-
+-
+0.8995
+Nhận xét: SVM rõ ràng là mô hình hiệu quả nhất trong ba mô hình được so sánh này. Với độ chính xác 91.36%, Precision, Recall và F1 Score đều xấp xỉ với giá trị này, Random Forest có khả năng phân loại rất tốt. Các chỉ số Precision và Recall đều cao và gần bằng nhau, cho thấy sự cân bằng tốt giữa khả năng dự đoán đúng và khả năng không bỏ sót các mẫu quan trọng.
+Mô hình học sâu
+LSTM:
+GRU:
+CNN:
+Nhận xét: Dựa trên bảng so sánh mô hình học máy, có thể thấy rằng mô hình CNN có hiệu suất tốt nhất với độ chính xác Train và Test cao nhất, đồng thời có giá trị Loss Train và Loss Test thấp nhất. Tuy nhiên, cả ba mô hình LSTM, GRU và CNN đều có hiệu suất tốt với độ chính xác Train và Test trên 0.89, cho thấy khả năng học tập và dự đoán hiệu quả.
+c) Đánh giá tổng thể:
+5.1 Tinh trang Overfit/Underfit
+  Model | Tinh trang    | Bang chung
+  ------+---------------+----------------------------------------
+  RF    | Can bang      | Test metrics on dinh
+  SVM   | Can bang      | Linear kernel + regularization ngam dinh
+  LR    | Can bang      | L2 regularization tich hop
+  LSTM  | OVERFIT       | Gap 8.1%, val_loss/train_loss = 9.2x
+  GRU   | OVERFIT       | Gap 7.2%, val_loss/train_loss = 7.8x
+  CNN   | OVERFIT       | Gap 8.1%, val_loss/train_loss = 8.4x
+5.2 Phan tich Val Loss - Dau hieu Overfitting DL
+  Tat ca 3 DL models co cung pattern:
+    train_loss -> 0.04-0.06   (gan 0)
+    val_loss   -> 0.44-0.45   (cao va khong giam)
+  Val loss khong giam du LR giam 4 lan -> model da SATURATE, khong con
+  hoc duoc thong tin moi tu validation set. Day la overfitting kinh dien.
+5.3 Nguyen Nhan Goc Re cua Overfitting DL
+  1. Embedding qua lon:
+     8,262 x 64 = 528,768 params trong embedding layer duy nhat,
+     chiem >80% tong params.
+  2. Dataset nho:
+     20,888 mau train cho model ~600k+ params
+     -> ti le params/sample cao -> de memorize.
+  3. Augmented data:
+     Synonym replacement tao ra cac mau rat giong nhau
+     -> model "nhin thay" bien the cua cung 1 cau, de memorize hon.
+  4. Khong du regularization:
+     Chi co Dropout(0.3) mot cho, khong co L2, BatchNorm.
+3. Đề xuất cải thiện
+a) Cho DL Models (uu tien chong overfitting)
+  STT | Thay doi                                    | Tac dong du kien
+  ----+---------------------------------------------+------------------
+   1  | Them Dropout(0.3-0.5) sau LSTM/GRU/Dense   | Giam gap 3-5%
+   2  | Them kernel_regularizer=l2(0.001) vao Dense | Giam memorization
+   3  | Giam EMBEDDING_DIM: 64 -> 32               | Giam params
+   4  | Dung pretrained embeddings (fastText vi)    | Tranh overfit
+   5  | Tang TRAINING_SPLIT: 0.8 -> 0.85           | +1,044 mau train
+   6  | patience=5 cho EarlyStopping               | Dung som hon
+b) Cho ML Models
+  STT | Thay doi                                    | Tac dong du kien
+  ----+---------------------------------------------+------------------
+   1  | RF: bo class_weight='balanced'             | +0.27% accuracy
+   2  | SVM: thu kernel='rbf' + GridSearch         | Co the +0.5-1%
+   3  | TfidfVectorizer(max_features=50000)        | Giam noise bigram
+   4  | min_df=2 de loc bigram hiem                | Giam overfitting TF-IDF
+c) Cai thien dai han
+  STT | Phuong phap        | Mo ta
+  ----+--------------------+------------------------------------------
+   1  | PhoBERT            | BERT pretrained tieng Viet, ~94-96%
+   2  | Them du lieu thuc  | Giam ti le augmented data
+   3  | Cross-validation   | K-fold de danh gia on dinh hon
+   4  | Ensemble DL + ML   | Ket hop SVM + LSTM + CNN
+KẾT LUẬN
+Qua thực hiện đề tài "PHÂN LOẠI PHẢN ÁNH CỦA NGƯỜI DÙNG ĐỐI VỚI SẢN PHẨM TRÊN CÁC SÀN THƯƠNG MẠI ĐIỆN TỬ", nhóm em đã đạt được một số kết quả quan trọng:
+Nhóm em đã mô tả quá trình thu thập dữ liệu và thực hiện các bước tiền xử lý để chuẩn bị dữ liệu cho mô hình học máy. 
+Các mô hình học máy như LSTM, GRU và CNN đã được thử nghiệm và so sánh hiệu suất. Kết quả cho thấy mô hình CNN đạt hiệu suất tốt nhất trong việc phân loại phản ánh của người dùng.
+Với kết quả đạt được, đề tài đã góp phần vào việc ứng dụng công nghệ học máy vào phân tích dữ liệu người dùng, một lĩnh vực đang nhận được sự quan tâm ngày càng cao trong thời đại số hiện nay.
+Tuy nhiên, đề tài cũng còn một số hạn chế cần được cải thiện, như mở rộng quy mô dữ liệu, thử nghiệm các mô hình học sâu phức tạp hơn và so sánh với các phương pháp phân loại khác. Những bước tiếp theo sẽ góp phần nâng cao độ chính xác và hiệu quả của hệ thống phân loại phản ánh của người dùng.
+TÀI LIỆU THAM KHẢO
+1 
+Chuẩn hóa: https://nguyenvanhieu.vn/xu-ly-tieng-viet-trong-python/
