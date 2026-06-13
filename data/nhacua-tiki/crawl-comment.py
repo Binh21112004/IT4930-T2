@@ -72,7 +72,7 @@ def comment_parser(json):
     return d
 
 
-df_id = pd.read_csv('product_id_ncds.csv')
+df_id = pd.read_csv('data/nhacua-tiki/product_id_ncds.csv')
 p_ids = df_id.id.to_list()
 result = []
 for pid in tqdm(p_ids, total=len(p_ids)):
@@ -84,6 +84,8 @@ for pid in tqdm(p_ids, total=len(p_ids)):
         if response.status_code == 200:
             print('Crawl comment page {} success!!!'.format(i))
             for comment in response.json().get('data'):
-                result.append(comment_parser(comment))
+                rating = comment.get('rating')
+                if rating is not None and int(rating) <= 3:
+                    result.append(comment_parser(comment))
 df_comment = pd.DataFrame(result)
-df_comment.to_csv('comments_data_ncds.csv', index=False)
+df_comment.to_csv('data/nhacua-tiki/comments_data_ncds.csv', index=False)

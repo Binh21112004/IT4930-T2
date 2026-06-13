@@ -1,0 +1,142 @@
+========================================================
+TONG HOP VAN DE & FIX QUA CAC PHIEN BAN V4 -> V5 -> V6
+IT4930 - Data Science | Nhom 21
+========================================================
+
+
+1. BANG KET QUA TONG HOP (3 PHIEN BAN)
+============================================================
+
+  Model | V4      | V5       | V6       | V6 vs V4 | Ghi chu
+  ------+---------+----------+----------+----------+------------------------
+  RF    | 91.27%  | 91.27%   | 91.27%   |  0.00%   | On dinh tuyet doi
+  SVM   | 91.36%  | 91.36%   | 91.36%   |  0.00%   | On dinh tuyet doi
+  LR    | 89.95%  | 89.95%   | 89.95%   |  0.00%   | On dinh tuyet doi
+  LSTM  | 90.54%  | 41.72%!! | 41.72%!! | -48.82%! | VAN THAT BAI - CHUA FIX
+  GRU   | 90.31%  | 89.92%   | 90.25%   | -0.06%   | Phuc hoi gan ve V4
+  CNN   | 90.43%  | 90.09%   | 90.35%   | -0.08%   | Phuc hoi gan ve V4
+
+Gap Overfitting (train_acc - val_acc tai best epoch):
+
+  Model | V4 gap | V5 gap | V6 gap | Nhan xet
+  ------+--------+--------+--------+----------------------------------
+  GRU   | 7.2%   | 6.8%   | 6.98%  | On dinh ~7%, chap nhan duoc
+  CNN   | 8.1%   | 6.6%   | 6.96%  | Cai thien ro tu V4, on dinh o V6
+  LSTM  | 7.7%   | 0.0%   | 0.0%   | Khong overfit vi khong hoc duoc gi
+
+
+2. DIEN BIEN VAN DE QUA TUNG PHIEN BAN
+============================================================
+
+------------------------------------------------------------
+2.1 VAN DE: 3 MODEL DL OVERFIT (phat hien tu V4)
+------------------------------------------------------------
+  Trieu chung (V4):
+    - LSTM/GRU/CNN deu co gap train-val 7.2-8.1%
+    - val_loss/train_loss ratio 7.8x - 9.2x -> model memorize du lieu train
+  Nguyen nhan:
+    - Embedding 8262x64 = 528,768 params (qua lon so voi 20,888 mau train)
+    - Augmented data (synonym replacement) tao mau giong nhau -> de memorize
+    - Khong du regularization: chi co Dropout(0.3) 1 cho, khong L2/BatchNorm
+
+  FIX o V5:
+    - SpatialDropout1D(0.3) thay Dropout thuong, them Dropout(0.4) sau lop hoi quy
+    - Them L2(0.001) tren Conv1D va Dense
+    - Giam EMBEDDING_DIM 64->32, tang TRAINING_SPLIT 0.8->0.85
+    - Them recurrent_dropout=0.2 cho LSTM/GRU
+  KET QUA V5:
+    - CNN: gap giam 8.1% -> 6.6% (RO RANG), val_loss 0.446->0.413 (TOT HON)
+    - GRU: gap giam 7.2% -> 6.8% (nho), accuracy giam nhe -0.39%
+    - TAC DUNG PHU NGHIEM TRONG: recurrent_dropout gay 2 loi moi (xem 2.2, 2.3)
+
+  FIX o V6:
+    - Giam L2 0.001->0.0005, giam Dropout 0.4->0.3 (V5 hoi qua tay)
+    - Tang EMBEDDING_DIM 32->48 (V5: 32 qua nho)
+    - ReduceLROnPlateau patience 4->6 (V5 giam LR qua nhanh do val_loss nhieu)
+  KET QUA V6:
+    - GRU: 90.25% (gap 6.98%) - phuc hoi gan bang V4, gap on dinh
+    - CNN: 90.35% (gap 6.96%) - phuc hoi gan bang V4, gap on dinh
+    => DA GIAI QUYET: ca 2 model deu o muc accuracy tot + gap overfit hop ly (~7%)
+
+------------------------------------------------------------
+2.2 VAN DE: recurrent_dropout LAM LSTM THAT BAI HOAN TOAN (V5 -> V6, CHUA FIX)
+------------------------------------------------------------
+  Trieu chung (V5 & V6 - GIONG HET NHAU):
+    - LSTM accuracy = 41.72% = chinh xac ty le class "Quality" trong val set
+    - train_acc va val_acc DUNG YEN tuyet doi (0.4270 / 0.4172) tu epoch 1->9
+    - EarlyStopping(patience=8) dung tai epoch 9, restore epoch 1 (gan random)
+    - Day la mo hinh "degenerate": chi predict 1 class duy nhat cho moi input
+
+  FIX DA THU o V6:
+    - Xoa recurrent_dropout=0.2 khoi LSTM (gia thuyet ban dau: day la nguyen nhan)
+  KET QUA V6: THAT BAI - LSTM V6 cho KET QUA Y HET V5 (41.72%, cung pattern
+    9 epoch dong bang). => recurrent_dropout KHONG PHAI nguyen nhan that su.
+
+  TINH TRANG HIEN TAI: VAN DE CHUA DUOC GIAI QUYET, TON TAI QUA 2 PHIEN BAN
+
+  Gia thuyet moi (chua kiem chung) cho V7:
+    Kien truc LSTM: Embedding -> SpatialDropout1D(0.3) -> Conv1D(64,L2) ->
+    MaxPooling1D(4) -> LSTM(64) -> Dropout -> Dense(softmax)
+    So sanh GRU (HOAT DONG TOT): Embedding -> SpatialDropout1D(0.3) ->
+    Bidirectional(GRU(64)) -> Dropout -> Dense(L2) -> Dense(softmax)
+    => Khac biet duy nhat: to hop Conv1D(L2) + MaxPooling1D truoc lop hoi quy.
+    => Gia thuyet: SpatialDropout1D + L2 tren Conv1D gay "dead ReLU" (tat ca
+       output Conv1D <= 0), MaxPooling1D tren chuoi toan so 0 tra ve toan 0,
+       LSTM nhan input = 0 moi timestep -> hoi tu ve 1 fixed point co dinh,
+       khong phu thuoc input -> Dense luon predict 1 class.
+    => Bang chung gian tiep: CNN cung dung Conv1D(L2)+SpatialDropout nhung
+       dung GlobalMaxPooling (khong co LSTM phia sau) -> hoat dong binh thuong
+       (90.35%). Van de chi xay ra khi Conv1D dua thang vao LSTM.
+
+  DE XUAT V7 (CHUA THUC HIEN):
+    Uu tien CAO: Bo Conv1D + MaxPooling1D khoi LSTM, dung kien truc don gian
+    giong GRU: Embedding -> SpatialDropout1D -> LSTM(64) -> Dropout -> Dense(softmax)
+
+------------------------------------------------------------
+2.3 VAN DE: recurrent_dropout LAM CHAM GPU 28 LAN (V5, DA FIX o V6)
+------------------------------------------------------------
+  Trieu chung (V5):
+    - GRU: 283 giay/epoch (v4 chi ~10s/epoch) -> 35 epoch = ~2.75 GIO chi GRU
+    - Tong thoi gian chay V5 > 3 GIO -> log bi truncate, mat ket quan RF/SVM/LR/LSTM
+  Nguyen nhan:
+    - recurrent_dropout=0.2 vo hieu hoa cuDNN kernel cua TensorFlow cho LSTM/GRU
+    - Buoc layer chay tren CPU thay vi GPU -> giam toc do ~28 lan
+
+  FIX o V6:
+    - Xoa hoan toan recurrent_dropout khoi LSTM va GRU
+  KET QUA V6:
+    - GRU: 283s/epoch -> 10.8s/epoch (26 LAN nhanh hon)
+    - LSTM: ~5.9s/epoch (cuDNN hoat dong)
+    - TONG THOI GIAN CHAY: >3 gio -> ~20.4 phut (~9 lan nhanh hon)
+    => DA GIAI QUYET HOAN TOAN. cuDNN hoat dong binh thuong tro lai.
+
+
+3. CHAN DOAN TONG THE HIEN TAI (SAU V6)
+============================================================
+
+  Hang muc                          | Trang thai
+  -----------------------------------+--------------------------------------
+  RF / SVM / LR                       | ON DINH, khong can thay doi
+  GRU                                 | DA FIX - 90.25%, gap ~7% (hop ly)
+  CNN                                 | DA FIX - 90.35%, gap ~7% (hop ly)
+  Toc do training (cuDNN)             | DA FIX - tu >3h xuong ~20 phut
+  LSTM                                | CHUA FIX - 41.72% (degenerate model),
+                                       | can thay doi kien truc cho V7
+
+
+4. KE HOACH V7 (DE XUAT)
+============================================================
+
+  STT | Thay doi                                     | Uu tien
+  ----+-----------------------------------------------+---------
+   1  | Bo Conv1D + MaxPooling1D khoi kien truc LSTM, | CAO
+      | dung: Embedding -> SpatialDropout1D -> LSTM(64)|
+      | -> Dropout(0.3) -> Dense(4, softmax)           |
+   2  | (Phuong an thay the) Neu giu Conv1D: bo rieng | TRUNG
+      | l2 tren Conv1D cua nhanh LSTM                  |
+   3  | Giu nguyen GRU, CNN, RF/SVM/LR (V6)            | -
+
+========================================================
+File tong hop tu: TRAINING_ANALYSIS_V4.txt, TRAINING_ANALYSIS_V5.txt,
+TRAINING_ANALYSIS_V6.txt
+========================================================

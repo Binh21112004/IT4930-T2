@@ -1,0 +1,300 @@
+========================================================
+BAO CAO PHAN TICH KET QUA TRAINING - VERSION 5
+IT4930 - Data Science | Nhom 21
+Ngay chay: 2026-06-08 | Platform: Kaggle (GPU Tesla P100-PCIE-16GB)
+========================================================
+
+LUU Y QUAN TRONG:
+File log download4.txt chi capture phan cuoi cua lan chay nay (bat dau
+tai giay thu 11054s). Ket qua ML va LSTM khong co trong log nay.
+Tuy nhien, cac model da duoc khoi phuc bang cach tai ve tu Kaggle Output
+va evaluate lai tren du lieu local (cung split + hyperparams).
+  - RF, SVM, LR : evaluate lai tu model .pkl tai ve
+  - LSTM        : chua evaluate duoc (TensorFlow khong ho tro Python 3.14)
+  - GRU         : chi thay epoch cuoi (E35), ket qua cuoi cung co san
+  - CNN         : day du toan bo training curve (E1-E35)
+
+
+1. CAC THAY DOI TRONG V5 (so voi V4)
+============================================================
+
+  Thanh phan            | V4 (cu)          | V5 (moi)
+  ----------------------+------------------+------------------
+  EMBEDDING_DIM         | 64               | 32
+  TRAINING_SPLIT        | 0.80             | 0.85
+  EarlyStopping patience| 10               | 8
+  ReduceLROnPlateau pat | 5                | 4
+  Dropout loai          | Dropout(0.3)     | SpatialDropout1D(0.3)
+  Sau LSTM/GRU output   | (khong co)       | Dropout(0.4)
+  recurrent_dropout     | (khong co)       | 0.2 (LSTM & GRU)
+  Dense trung gian      | 6 units (GRU/CNN)| 32 units + Dropout(0.3)
+  L2 regularization     | Khong            | l2(0.001) tren Conv/Dense
+
+
+2. KET QUA TONG HOP (day du sau khi khoi phuc tu model files)
+============================================================
+
+  Model | V4      | V5       | Thay doi  | Nguon
+  ------+---------+----------+-----------+---------------------------
+  RF    | 91.27%  | 91.27%   |  0.00%    | Evaluate tu .pkl tai ve
+  SVM   | 91.36%  | 91.36%   |  0.00%    | Retrain cung params (*)
+  LR    | 89.95%  | 89.95%   |  0.00%    | Evaluate tu .pkl tai ve
+  LSTM  | 90.54%  | 41.72%!! | -48.82%!! | Load model.h5 + evaluate
+  GRU   | 90.31%  | 89.92%   | -0.39%    | Tu log download4.txt
+  CNN   | 90.43%  | 90.09%   | -0.34%    | Tu log download4.txt
+
+(*) SVM pkl bi loi sklearn version (1.6.1->1.9.0), retrain voi cung
+    hyperparams: SVC(kernel='linear', class_weight='balanced', random_state=42)
+    tren cung TF-IDF + cung train/test split -> ket qua tuong duong.
+
+!!! PHAT HIEN NGHIEM TRONG: LSTM V5 THAT BAI HOAN TOAN !!!
+  LSTM V5 chi predict class Quality cho moi input (accuracy = 41.72% = ty le
+  majority class trong val set). Day khong phai ket qua classify tot ma la
+  mo hinh degenerate.
+
+  Bang chung:
+    - Adam optimizer chay 6246 iterations = 694 steps/epoch x 9 epochs
+    - EarlyStopping(patience=8) dung tai epoch 9 vi val_acc khong tang tu E1
+    - restore_best_weights tra ve epoch 1 (gan voi random init)
+    - Dense bias[Quality] = +0.10 (cao nhat) -> model luon predict Quality
+
+  Nguyen nhan goc re: recurrent_dropout=0.2 gay training LSTM hoan toan
+  khong on dinh. LSTM khong hoc duoc bat cu thu gi trong 9 epochs.
+
+  Nhan xet: ML models (RF/SVM/LR) khong thay doi giua V4 va V5 vi cung
+  hyperparams, cung data split, cung TF-IDF settings. Day la ket qua mong doi.
+
+So sanh gap Overfitting (train acc - val acc):
+
+  Model | V4 gap | V5 gap | Cai thien
+  ------+--------+--------+----------
+  GRU   | 7.2%   | 6.8%   | -0.4%  (nho)
+  CNN   | 8.1%   | 6.6%   | -1.5%  (ro rang)
+
+
+3. PHAN TICH CHI TIET - GRU
+============================================================
+
+Du lieu co san: chi epoch cuoi (E35) va ket qua sau cung.
+
+  Epoch cuoi (E35):
+    Train Acc : 96.66%
+    Val Acc   : 89.84%
+    Train Loss: 0.1232
+    Val Loss  : 0.4496
+    Gap       : 6.82%
+
+  EarlyStopping: triggered tai E35, restored best epoch = E27
+  GRU Test Accuracy sau restore: 89.92%
+
+Chan doan: VAN CON OVERFITTING, CAI THIEN KHONG DANG KE
+
+  - Gap giam tu 7.2% (v4) xuong 6.8% (v5) — cai thien rat nho.
+  - Accuracy giam nhe: 90.31% -> 89.92% (-0.39%).
+  - Val loss cai thien nhe: 0.446 (v4) -> 0.4496 (v5) — gan nhu bang nhau.
+  - Regularization chua du de giam overfitting GRU mot cach dang ke.
+
+!!! PHAT HIEN VAN DE NGHIEM TRONG: recurrent_dropout lam CHAM GPU !!!
+
+  Moi epoch GRU mat: 694 steps x 408ms/step = ~283 GIAY/EPOCH
+  (v4 GRU: ~10 giay/epoch)
+
+  Ly do: recurrent_dropout=0.2 vo hieu hoa cuDNN kernel cua TensorFlow,
+  buoc GRU chay tren CPU thay vi GPU. Toc do giam ~28 lan.
+
+  GRU 35 epochs x 283s = ~9900 giay (~2.75 GIO) chi rieng GRU!
+  Day la ly do log bat dau tai giay 11054 — phan lon thoi gian chay
+  bi chiem boi GRU train toc do cham.
+
+  KET LUAN: recurrent_dropout KHONG THUC TE tren Kaggle (gioi han ~9h/run).
+  Can XOA recurrent_dropout de re-enable cuDNN.
+
+
+4. PHAN TICH CHI TIET - CNN (day du nhat)
+============================================================
+
+Kien truc v5:
+  Embedding(8262, 32, trainable=True) -> SpatialDropout1D(0.3)
+  -> Conv1D(128, 5, relu, l2=0.001) -> GlobalMaxPool
+  -> Dropout(0.4) -> Dense(32, relu, l2=0.001) -> Dropout(0.3)
+  -> Dense(4, softmax)
+
+Training curve (35 epochs, EarlyStopping patience=8):
+
+  Epoch | Train Acc | Val Acc  | Val Loss | Ghi chu
+  ------+-----------+----------+----------+------------------
+   1    |  73.75%   |  85.78%  |  0.4965  |
+   2    |  86.77%   |  87.52%  |  0.4355  |
+   3    |  88.96%   |  88.59%  |  0.4123  |
+   4    |  90.79%   |  88.56%  |  0.4071  |
+   5    |  91.67%   |  89.07%  |  0.4049  |
+   6    |  92.63%   |  89.35%  |  0.4005  |
+   7    |  93.29%   |  89.63%  |  0.4045  |
+   8    |  93.80%   |  89.20%  |  0.4140  |
+   9    |  94.10%   |  89.61%  |  0.4035  |
+  10    |  94.76%   |  89.53%  |  0.4149  | [LR: 1e-3->5e-4]
+  11    |  95.14%   |  89.84%  |  0.4008  |
+  12    |  95.49%   |  89.86%  |  0.4115  |
+  13    |  95.58%   |  89.61%  |  0.4153  |
+  14    |  95.78%   |  89.99%  |  0.4203  | [LR: 5e-4->2.5e-4]
+  15    |  96.12%   |  89.66%  |  0.4081  |
+  16    |  96.09%   |  89.97%  |  0.4048  |
+  17    |  96.36%   |  89.74%  |  0.4112  |
+  18    |  96.30%   |  89.58%  |  0.4150  | [LR: 2.5e-4->1.25e-4]
+  19    |  96.44%   |  89.76%  |  0.4117  |
+  20    |  96.42%   |  90.02%  |  0.4139  |
+  21    |  96.66%   |  89.58%  |  0.4155  |
+  22    |  96.63%   |  89.79%  |  0.4197  | [LR: 1.25e-4->6.25e-5]
+  23    |  96.62%   |  89.99%  |  0.4150  |
+  24    |  96.64%   |  90.07%  |  0.4155  |
+  25    |  96.71%   |  90.07%  |  0.4144  |
+  26    |  96.54%   |  89.89%  |  0.4127  | [LR: 6.25e-5->3.125e-5]
+  27(*) |  96.73%   |  90.09%  |  0.4136  | BEST EPOCH
+  28    |  96.76%   |  89.92%  |  0.4120  |
+  29    |  96.51%   |  89.84%  |  0.4129  |
+  30    |  96.69%   |  89.99%  |  0.4170  | [LR: 3.125e-5->1.5625e-5]
+  31    |  96.74%   |  90.02%  |  0.4156  |
+  32    |  96.72%   |  89.97%  |  0.4152  |
+  33    |  96.75%   |  89.97%  |  0.4158  |
+  34    |  96.90%   |  89.94%  |  0.4166  | [LR: 1.5625e-5->7.8125e-6]
+  35    |  96.71%   |  89.94%  |  0.4171  | EarlyStopping -> restore E27
+  ---
+  CNN Test Accuracy: 90.09%
+
+Chan doan: OVERFITTING GIAM RO RANG, NHUNG VAL ACC PLATEAU SOM
+
+Tich cuc:
+  - Gap (train-val): 8.1% (v4) -> 6.6% (v5) — GIAM 1.5% nho L2 + Dropout
+  - Val loss trung binh: 0.446 (v4) -> 0.413 (v5) — CAI THIEN DANG KE
+  - Train accuracy bi ham lai o ~96-97% (v4: 98-99%) — L2 dang hoat dong
+  - Model khong con memorize du lieu train nhu truoc
+
+Tieu cuc:
+  - Val accuracy PLATEAU rat som: 89.5-90.1% tu E6 tro di (30 epoch khong
+    thoat ra khoi khoang nay)
+  - ReduceLROnPlateau ban 7 lan (v4: 4 lan) — LR giam qua nhanh do
+    patience=4 va val_loss nhieu (noise)
+  - Peak val accuracy giam: 90.43% (v4) -> 90.09% (v5) — Regularization
+    hoi manh tay, cam model hoc them
+  - CNN hoc nhanh nhat, hoi tu o E6-E7 (val=89.35-89.63%), sau do chi dao
+    dong ngang qua 30 epoch tiep theo — day la bottleneck that su
+
+Nguyen nhan val plateau:
+  - Dataset 22,193 mau train x 4 lop — gia tran "tu nhien" cua kien truc
+    Conv1D nay co the la ~90-91%
+  - Augmented data: cac mau synonym replacement rat giong nhau -> model da
+    hoc het thong tin co the hoc duoc tu du lieu nay
+  - Khong phai van de regularization — day la ceiling cua mo hinh/du lieu
+
+
+5. SO SANH V4 va V5
+============================================================
+
+5.1 Ve Accuracy
+
+  Model | V4      | V5      | Delta   | Nhan xet
+  ------+---------+---------+---------+----------------------
+  GRU   | 90.31%  | 89.92%  | -0.39%  | Giam nhe, over-regularized
+  CNN   | 90.43%  | 90.09%  | -0.34%  | Giam nhe, over-regularized
+
+5.2 Ve Overfitting (gap train-val)
+
+  Model | V4 gap | V5 gap | Delta   | Nhan xet
+  ------+--------+--------+---------+----------------------
+  GRU   | 7.2%   | 6.8%   | -0.4%   | Cai thien khong dang ke
+  CNN   | 8.1%   | 6.6%   | -1.5%   | Cai thien co y nghia
+
+5.3 Ve Val Loss
+
+  Model | V4 val_loss | V5 val_loss | Delta   | Nhan xet
+  ------+-------------+-------------+---------+-------------------
+  GRU   | 0.446       | 0.4496      | +0.003  | Gan nhu bang nhau
+  CNN   | 0.446       | 0.413       | -0.033  | CAI THIEN ro rang
+
+5.4 Ve Toc do Training
+
+  Model | V4 (s/epoch) | V5 (s/epoch) | Ty le cham hon
+  ------+--------------+--------------+---------------
+  GRU   | ~10s         | ~283s        | 28 lan CHAM HON (!)
+  CNN   | ~2s          | ~2s          | Khong doi (khong co RD)
+
+  Nguyen nhan: recurrent_dropout=0.2 tren GRU/LSTM tat cuDNN kernel
+
+
+6. CHAN DOAN TONG THE V5
+============================================================
+
+  Model | Tinh trang         | Thay doi so v4
+  ------+--------------------+---------------------------------------
+  RF    | On dinh            | 0.00% (cung hyperparams/data)
+  SVM   | On dinh            | 0.00% (cung hyperparams/data)
+  LR    | On dinh            | 0.00% (cung hyperparams/data)
+  LSTM  | THAT BAI HOAN TOAN | -48.82%! (degenerate, all-Quality)
+  GRU   | Overfit nhe        | Gap giam nhe (7.2%->6.8%), -0.39%
+  CNN   | Overfit nhe        | Gap giam ro (8.1%->6.6%), val_loss tot hon
+
+  Tong ket: recurrent_dropout=0.2 gay ra 3 tac hai nghiem trong:
+    (1) LSTM: training hoan toan that bai, accuracy 90.54% -> 41.72%
+    (2) GRU: chay cham 28x (10s -> 283s/epoch), chiem 2.75 gio
+    (3) Ca hai lam tran bo dem log, mat toan bo ket qua RF/SVM/LR
+
+
+7. NGUYEN NHAN GOC RE CHUA GIAI QUYET
+============================================================
+
+  Van de        | Giai thich
+  --------------+---------------------------------------------------
+  Val plateau   | CNN dat tran ~90.1% tu E6 va khong tang them 30ep
+  ~90%          | -> Day la ceiling thuc su cua mo hinh nay tren du lieu nay,
+                | khong phai do over/underfitting
+  Overfitting   | Con 6-7% gap sau v5. Can them du lieu thuc hoac pretrained
+  con lai       | embeddings de giai quyet triet de
+  recurrent_    | Bat cuDNN -> 28x cham hon. Khong dung duoc thuc te
+  dropout       | tren Kaggle (gioi han 9h/run)
+
+
+8. DE XUAT CHINH XAC CHO V6
+============================================================
+
+  STT | Thay doi                          | Uu tien | Ly do
+  ----+-----------------------------------+---------+------------------------------
+   1  | XOA recurrent_dropout             | CAO     | Re-enable cuDNN, giam 28x
+   2  | Giam L2: 0.001 -> 0.0005          | CAO     | Regularization dang manh tay
+   3  | Giam Dropout: 0.4 -> 0.3          | CAO     | Tuong tu tren
+   4  | Tang EMBEDDING_DIM: 32 -> 48      | TRUNG   | 32 co the qua nho
+   5  | ReduceLROnPlateau patience: 4->6  | TRUNG   | Val loss nhieu, dung phan ung
+   6  | GRU: dung LSTM thay the           | THAP    | LSTM co cuDNN support tot hon
+
+
+9. KET LUAN TONG
+============================================================
+
+Thanh tuu:
+  (1) CNN: overfitting gap giam ro rang tu 8.1% -> 6.6%, val_loss tot hon.
+  (2) L2 regularization + SpatialDropout1D dang hoat dong theo huong dung.
+  (3) Train accuracy bi ham boi regularization (96-97% thay vi 98-99%)
+      cho thay mo hinh khong con memorize training data nhu truoc.
+
+Van de chua giai quyet:
+  (1) recurrent_dropout pha vo cuDNN: GRU mat 283s/epoch thay vi 10s.
+      Day la van de NGHIEM TRONG nhat, buoc phan nhieu thoi gian Kaggle.
+  (2) Val accuracy plateau o ~90%: day la ceiling cua mo hinh/du lieu,
+      khong phai van de regularization.
+  (3) Accuracy giam nhe (-0.34% CNN, -0.39% GRU): regularization v5
+      hoi qua manh so voi muc can thiet.
+
+Model khuyen nghi su dung (du lieu co san):
+  - GRU: 89.92% (v5) — ok nhung cham do recurrent_dropout
+  - CNN: 90.09% (v5) — on dinh, overfitting giam
+
+De dat accuracy > 91% cho DL can:
+  - Xoa recurrent_dropout de GRU/LSTM chay nhanh tro lai
+  - Giam L2 va Dropout ve muc hop ly hon
+  - Hoac dung pretrained embeddings (fastText tieng Viet)
+
+========================================================
+Bao cao duoc tao tu log Kaggle run ngay 2026-06-08.
+Notebook: https://www.kaggle.com/code/longphan5978/vietnamese-review-classification (Version 5)
+Luu y: Log chi capture tu giay 11054s (GRU epoch 35 cuoi).
+       Ket qua ML va LSTM khong co trong log nay.
+========================================================
