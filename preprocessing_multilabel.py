@@ -1,6 +1,6 @@
 """
 Tiền xử lý dữ liệu Comment cho Multi-label Classification
-Quy trình 5 bước tối ưu cho phân loại đa khía cạnh (Vận chuyển, Dịch vụ, Giá cả, Chất lượng)
+Quy trình 5 bước tối ưu cho phân loại đa khía cạnh (Vận chuyển, Dịch vụ, Đóng gói, Chất lượng)
 """
 
 import re
@@ -59,9 +59,10 @@ def is_valid_comment(text):
     # Danh sách các từ thực tiếng Việt phổ biến
     common_vietnamese_words = {
         'là', 'có', 'được', 'không', 'của', 'từ', 'đến', 'với', 'cho', 'tại',
-        'sản', 'phẩm', 'tốt', 'xấu', 'tuyệt', 'vời', 'kém', 'giá', 'rẻ', 'đắt',
+        'sản', 'phẩm', 'tốt', 'xấu', 'tuyệt', 'vời', 'kém',
         'giao', 'hàng', 'nhanh', 'chậm', 'lâu', 'dịch', 'vụ', 'hỗ', 'trợ',
         'chất', 'lượng', 'bền', 'hư', 'hỏng', 'lỗi', 'vỡ', 'rách', 'móp',
+        'đóng', 'gói', 'bọc', 'thùng', 'hộp', 'xốp', 'chống', 'sốc', 'băng', 'keo',
         'khuyến', 'mãi', 'sale', 'mua', 'bán', 'hài', 'lòng', 'thất', 'vọng'
     }
     
@@ -172,7 +173,6 @@ replace_dict = {
     'cl': 'chất lượng',
     'chất lg': 'chất lượng',
     'sp': 'sản phẩm',
-    'hàng': 'sản phẩm',
     'sản phẩm tốt': 'chất lượng tốt',
     'sản phẩm xấu': 'chất lượng xấu',
     'sản phẩm kém': 'chất lượng kém',
@@ -185,18 +185,20 @@ replace_dict = {
     'bị móp': 'bị móp',
     'độ bền': 'độ bền',
     
-    # === Giá cả ===
-    'giá': 'giá',
-    'giá cao': 'giá cao',
-    'giá cả cao': 'giá cao',
-    'đắt': 'giá cao',
-    'đắt lắm': 'giá cao',
-    'giá rẻ': 'giá rẻ',
-    're': 'giá rẻ',
-    'rẻ': 'giá rẻ',
-    'km': 'khuyến mãi',
-    'giảm giá': 'giảm giá',
-    'sale': 'sale',
+    # === Đóng gói ===
+    'đóng gói': 'đóng gói',
+    'gói hàng': 'đóng gói',
+    'gói': 'đóng gói',
+    'bọc': 'bọc',
+    'thùng': 'hộp',
+    'hộp': 'hộp',
+    'box': 'hộp',
+    'xốp': 'xốp',
+    'chống sốc': 'chống sốc',
+    'băng keo': 'băng keo',
+    'băng dính': 'băng keo',
+    'gói ẩu': 'gói ẩu',
+    'bọc kỹ': 'bọc kỹ',
     
     # === Teen code / Viết tắt chung ===
     'k ': 'không ',
@@ -288,7 +290,10 @@ def step3_text_replacement(text):
         if old in ('j', 'k '):
             continue
         # Dùng word boundary để tránh thay thế một phần của từ
-        text = re.sub(r'\b' + re.escape(old) + r'\b', new, text, flags=re.IGNORECASE)
+        if old == 'gói':
+            text = re.sub(r'(?<!đóng\s)\b' + re.escape(old) + r'\b', new, text, flags=re.IGNORECASE)
+        else:
+            text = re.sub(r'\b' + re.escape(old) + r'\b', new, text, flags=re.IGNORECASE)
     
     # Xóa khoảng trắng thừa
     text = re.sub(r'\s+', ' ', text).strip()
@@ -327,7 +332,7 @@ def detect_english_ratio(text):
     # Danh sách từ tiếng Anh thường gặp trên TMĐT
     common_english = {
         'ok', 'good', 'bad', 'nice', 'great', 'terrible', 'fast', 'slow',
-        'quality', 'service', 'delivery', 'price', 'shop', 'product',
+        'quality', 'service', 'delivery', 'package', 'pack', 'packing', 'shop', 'product',
         'buy', 'sell', 'order', 'payment', 'free', 'sale', 'hot'
     }
     
@@ -448,11 +453,12 @@ if __name__ == "__main__":
     # Test các bước xử lý
     test_comments = [
         "sp xài ổn áp cl tốt, mỗi tội gh hơi lâu k nhanh như lần trc.",
-        "giao hàng quá chậm 😞😞 nhưng sản phẩm thì ổn, giá hơi đắt",
+        "giao hàng quá chậm 😞😞 nhưng đóng gói kĩ bọc chống sốc tốt",
         "⭐⭐⭐⭐⭐ 🥰🥰🥰",  # Chỉ emoji
         "ok",  # Quá ngắn
         "Service quá tệ, shipper thái độ xấu nhưng hàng ok",
         "Không hài lòng vì giao nhầm hàng, đc cái là ship nhanh...",
+        "Đồ bị hư hỏng nát do gói hàng ẩu, sơ sài",
     ]
     
     print("="*70)
