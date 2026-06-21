@@ -53,7 +53,7 @@ IT4930-T2/
 ## 🛠️ 3. Hướng dẫn Cài đặt (Installation Guide)
 
 ### Yêu cầu hệ thống
-* **Python**: Phiên bản `3.8` trở lên.
+* **Python**: Phiên bản `3.8` đến `3.13` (Đã kiểm nghiệm chạy tốt trên Python `3.13`).
 * **Hệ điều hành**: Windows, macOS hoặc Linux.
 
 ### Các bước cài đặt
@@ -64,39 +64,44 @@ IT4930-T2/
    cd IT4930-T2
    ```
 
-2. **Cài đặt các thư viện cần thiết:**
-   Cài đặt tất cả các gói phụ thuộc qua `pip`:
+2. **Cài đặt các thư viện phụ thuộc:**
+   Cài đặt tất cả các thư viện cần thiết (bao gồm Flask, TensorFlow, Keras và Scikit-Learn) bằng cách chạy lệnh dưới đây:
    ```bash
-   pip install pandas openpyxl underthesea regex flask
+   pip install pandas openpyxl underthesea regex flask tensorflow keras scikit-learn numpy
    ```
 
 ---
 
 ## 🚀 4. Hướng dẫn Sử dụng (Usage Instructions)
 
-### A. Chạy quy trình cập nhật dữ liệu (Data Pipeline)
+### A. Khởi chạy Ứng dụng Web dự đoán (Flask App)
+Ứng dụng web dự đoán đã được tối ưu hóa để tương thích với cả Keras 3.x và Scikit-Learn mới nhất. Để chạy ứng dụng:
+1. Chạy lệnh khởi tạo server Flask:
+   ```bash
+   python app.py
+   ```
+2. Truy cập ứng dụng qua trình duyệt tại địa chỉ: `http://127.0.0.1:5000`
 
-Nếu bạn muốn tạo lại dữ liệu huấn luyện sạch hoặc cập nhật thêm bình luận mới:
-
+### B. Chạy quy trình cập nhật dữ liệu (Data Pipeline)
+Nếu bạn muốn cập nhật dữ liệu bình luận mới và chạy lại pipeline huấn luyện mô hình:
 1. **Gộp và lọc dữ liệu đơn nhãn:**
    ```bash
    python merge_filtered_data.py
    ```
-2. **Thực hiện tách câu từ bình luận đa nhãn và tăng cường cân bằng dữ liệu:**
+2. **Thực hiện tách câu từ bình luận đa nhãn và tự động tăng cường dữ liệu:**
    ```bash
    python split_multilabel_comments.py
    ```
-   *(Kịch bản này sẽ tự động gọi `augment_data.py` để sinh ra file dữ liệu tăng cường cuối cùng `comments_merged_single_label_augmented.csv` với 26,109 dòng).*
+   *(Quy trình này tự động gộp các mệnh đề bóc tách được và gọi `augment_data.py` để đồng bộ tập dữ liệu huấn luyện cân bằng `comments_merged_single_label_augmented.csv` với 26,097 dòng).*
 
-### B. Chạy thử nghiệm bộ tiền xử lý đơn lẻ
-Để kiểm tra xem văn bản được xử lý và làm sạch như thế nào:
+### C. Chạy thử nghiệm bộ tiền xử lý đơn lẻ
+Để chạy thử nghiệm làm sạch văn bản độc lập:
 ```bash
 python preprocessing_multilabel.py
 ```
 
-### C. Khởi chạy Ứng dụng Web dự đoán (Flask App)
-Khởi chạy giao diện Web cục bộ để nhập bình luận trực quan và xem phân loại:
-```bash
-python app.py
-```
-Sau đó truy cập trình duyệt tại địa chỉ: `http://127.0.0.1:5000`
+### 💡 Lưu ý khi sử dụng trên Windows
+* Ứng dụng đã tích hợp cơ chế tự động reconfigure `sys.stdout` để tránh lỗi `UnicodeEncodeError` khi in các bình luận tiếng Việt có dấu ra màn hình Terminal (sử dụng chế độ thay thế `backslashreplace`).
+* Nếu bạn thấy các cảnh báo về `oneDNN custom operations` của TensorFlow, bạn có thể tắt bằng cách gán biến môi trường trước khi chạy:
+  * **PowerShell**: `$env:TF_ENABLE_ONEDNN_OPTS=0; python app.py`
+  * **Command Prompt**: `set TF_ENABLE_ONEDNN_OPTS=0 && python app.py`
