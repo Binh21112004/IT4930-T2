@@ -1,4 +1,13 @@
 import os
+import sys
+
+# Configure standard streams to handle encoding errors safely on Windows terminal
+try:
+    sys.stdout.reconfigure(errors='backslashreplace')
+    sys.stderr.reconfigure(errors='backslashreplace')
+except AttributeError:
+    pass
+
 import numpy as np
 import pickle
 from flask import Flask, request, render_template
