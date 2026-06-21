@@ -38,9 +38,16 @@ with open('models/rf_classifier.pkl', 'rb') as file:
 with open('models/svm_classifier.pkl', 'rb') as file:
     svm_classifier = pickle.load(file)
 
+# Custom Unpickler to handle legacy Keras 2.x tokenizer path in Keras 3.x
+class LegacyKerasUnpickler(pickle.Unpickler):
+    def find_class(self, module, name):
+        if 'keras.src.preprocessing' in module:
+            module = module.replace('keras.src.preprocessing', 'keras.src.legacy.preprocessing')
+        return super().find_class(module, name)
+
 # Load the Tokenizer
 with open('models/tokenizer.pkl', 'rb') as file:
-    tokenizer = pickle.load(file)
+    tokenizer = LegacyKerasUnpickler(file).load()
 
 # Load the TF-IDF vectorizer
 with open('models/tfidf_vectorizer.pkl', 'rb') as file:
